@@ -12,8 +12,6 @@ I remember back when I was in college (okay, it really wasn't that long ago so i
 Almost all the classes were taught in Java. Do you ever still have nightmares about your college days?  I do.
 Nightmares with the professor at the front of the room shouting "Put getters and setters around all your member variables!"
 
-I also have nightmares a lot worse that I don't want to get into.
-
 Flash forward a few years and now I'm mostly working in C#. Not a whole lot has changed, except instead of getters and setters
 C# developers use 'properties.' It's basically got the same purpose which is to provide some sort of interface to the internal
 state of the object.
