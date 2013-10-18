@@ -1,3 +1,4 @@
 name: Caleb Gossler
 pygments: true
 markdown: redcarpet
+permalink: pretty
