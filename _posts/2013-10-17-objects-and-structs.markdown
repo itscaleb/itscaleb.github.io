@@ -3,6 +3,7 @@ layout: post
 title:  "When Objects Don't Need Behavior"
 date:   2013-10-17 22:30:33
 description: Some classes are better off as data structures with no behavior.
+comments: true
 tags: objects structures propertioes oop encapsulation nitpick boring
 ---
 I'll keep it simple for my first blog post.

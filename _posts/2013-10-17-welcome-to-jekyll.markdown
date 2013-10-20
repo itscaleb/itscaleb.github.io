@@ -3,6 +3,7 @@ layout: post
 title:  "Welcome to Jekyll!"
 date:   2013-10-17 10:52:56
 description: My first blog post. A quick introduction (and thanks to Lance for intruducing me to jekyll!).
+comments: true
 tags: hello world jekyll
 ---
 
