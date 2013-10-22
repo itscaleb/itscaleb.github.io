@@ -2,7 +2,7 @@
 layout: post
 title:  "(Open Paren)"
 date:   2013-10-17 10:52:56
-description: A Quick Introduction for My First Blog Post.
+description: A quick introduction for my first blog post.
 categories: misc
 tags: hello world jekyll
 ---
