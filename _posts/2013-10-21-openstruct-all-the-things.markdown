@@ -1,6 +1,6 @@
 ---
 layout: post
-title: That Was Easy
+title: OpenStruct All The Things!
 description: You know what they say about ruby and developer happiness! Let's take a look at OpenStruct, a data structure in the standard library which allowed me to skip past a lot of hassle on a recent project.
 date:   2013-10-20 23:57:30
 comments: true
