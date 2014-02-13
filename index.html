@@ -5,13 +5,12 @@ description: The personal blog of Caleb Gossler, software developer extraordinai
 tags: software development programming code caleb gossler
 ---
 
-<div id="home">
-  <h1>Blog Posts</h1>
-  <ul class="posts">
-    {% for post in site.posts %}
-      <li><span>{{ post.date | date_to_string }}</span> &raquo; <a href="{{ post.url }}">{{ post.title }}</a></li>
-      <li class="tags">{{ post.description }}</li>
-      <p></p>
+<div>
+	{% for post in site.posts %}
+	<dl class="dl-horizontal">
+		<dt>{{ post.date | date_to_string }}</dt>
+		<dd><a href="{{ post.url }}">{{ post.title }}</a></dd>
+		<dd>{{ post.description }}</dd>
     {% endfor %}
-  </ul>
+	</dl>
 </div>
