@@ -2,7 +2,7 @@
 layout: post
 title: Book Review - The Little Schemer
 image: the-little-schemer.jpg
-description: ->( tldr ) { 'You should read this book.' }
+description: I think I need to take a breather after this one.
 date:   2014-2-6 20:42:20
 comments: true
 categories: books
@@ -20,4 +20,4 @@ The preface states that the goal of this book is to get you to think recursively
 
 After I finished the book, I read through the preface one last time. I was surprised that the authors write "This book will not introduce you to the practical world of programming," because I couldn't disagree more. I've been able to immediately apply what I've learned through *The Little Schemer* in my day-to-day coding, and I'm amazed at how much better my code is already.
 
-Reading the little schemer will require a lot of time, and a lot of effort. But it is a very rewarding experience, especially to anyone that is trying to get a feel for what functional programming is all about.
+Reading the little schemer will require a lot of time, and a lot of effort. But it is absolutely worth it, especially to anyone that is trying to get a feel for what functional programming is all about.
