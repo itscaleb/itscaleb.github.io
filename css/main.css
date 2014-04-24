@@ -1,7 +1,51 @@
-body {
+div.post {
   padding-top: 50px;
+}
+div.post img {
+  float: right;
+  padding: 1em 1em 1em 1em;
+}
+div.intro {
+  border-bottom-style: dotted;
+  border-width: thin;
+  padding-bottom: 10px;
+  margin-bottom: 10px;
+}
+ul.tags {
+  padding: 0;
+}
+ul.tags li {
+  list-style-type: none;
+  display: inline;
+  background-color: #f9f2f4;
+  padding: .25em .25em .25em .25em;
+  color: #c7254e;
+  border-radius: 4px;
+}
+p[itemprop="description"] {
+  font-style: italic;
+  font-size: large;
+}
+div[itemprop="author"] {
+  color: #999;
+  padding: .25em .25em .25em .25em;
+  background-color: #222;
+  border-style: dotted;
+  border-width: thin;
+  border-radius: 4px;
+  text-align: center;
+  margin-top: 2em;
+}
+h1 {
+  margin: 0px;
+  padding: 0px;
+}
+h2 {
   font-size: large;
 }
 .site {
-  padding: 40px 15px;
+  padding: 60px 15px;
+}
+ol.posts {
+  list-style-type: none;
 }

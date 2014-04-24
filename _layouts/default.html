@@ -5,8 +5,9 @@
 	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 	<meta name="description" content="{{ page.description }}">
 	<meta name="keywords" content="{{ page.tags | join: ' ' }}">
-	<title>{{ page.title }}</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name="title" content="{{ page.title }}">
+	<title>{{ page.title }}</title>
 
 	<!-- syntax highlighting CSS -->
 	<link rel="stylesheet" href="/css/syntax.css">
@@ -41,14 +42,14 @@
 					<span class="icon-bar"></span>
 					<span class="icon-bar"></span>
 				</button>
-				<a class="navbar-brand" href="http://www.calebgossler.com">Caleb Gossler</a>
+				<h1><a class="navbar-brand" href="/">Caleb Gossler</a></h1>
 			</div>
 			<div class="collapse navbar-collapse">
 				<ul class="nav navbar-nav">
 					<li><a class="extra" href="/feed.xml">feed</a></li>
-					<li><a href="http://www.github.com/itscaleb">github</a></li>
-					<li><a href="https://twitter.com/itscaleb">twitter</a></li>
-					<li><a href="https://plus.google.com/107298575558919990581?rel=author">google+</a></li>
+					<li><a rel="me" href="http://www.github.com/itscaleb">github</a></li>
+					<li><a rel="me" href="https://twitter.com/itscaleb">twitter</a></li>
+					<li><a rel="me" href="https://plus.google.com/107298575558919990581?rel=author">google+</a></li>
 				</ul>
 			</div><!--/.nav-collapse -->
 		</div>
