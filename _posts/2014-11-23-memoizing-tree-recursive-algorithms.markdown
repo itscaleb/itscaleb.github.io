@@ -104,7 +104,7 @@ function memoize(func) {
 }
 {% endhighlight %}
 
-Do describe how `memoize` works, I need to start using the term *environment*. Every time a function is called, the programming language's interpreter creates an environment that the function will be evaluated in. All the environment is, is a part of memory that has a key -> value map which maps variable names to their values. After the environment is created, all local variables and parameters for that function are placed in the environment so that the function has access to them. For example, when `memoize` is called, `result` and `func` will be placed in the environment. The other key point to understand is that `memoize` also return a function `memoizedFunc`, *which will have access to the environment that was just created* on each invocation. This means that `memoizedFunc` also has access to `result` and `func`.
+To describe how `memoize` works, I need to start using the term *environment*. Every time a function is called, the programming language's interpreter creates an environment that the function will be evaluated in. All the environment is, is a part of memory that has a key -> value map which maps variable names to their values. After the environment is created, all local variables and parameters for that function are placed in the environment so that the function has access to them. For example, when `memoize` is called, `result` and `func` will be placed in the environment. The other key point to understand is that `memoize` also return a function `memoizedFunc`, *which will have access to the environment that was just created* on each invocation. This means that `memoizedFunc` also has access to `result` and `func`.
 
 Now we can memoize a function like this:
 
