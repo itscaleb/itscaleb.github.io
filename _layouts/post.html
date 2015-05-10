@@ -3,7 +3,7 @@ layout: default
 ---
 <div itemscope itemtype="http://schema.org/BlogPosting" class="post">
 	<div class="intro">
-		<h1 itemprop="headline">{{ page.title }}</h1>
+		<h1 itemprop="headline"><a href=#>{{ page.title }}</a></h1>
 		<p itemprop="description">{{ page.description }}</p>
 		<time itemprop="datePublished" datetime="{{ page.date | date: "%Y-%m-%d"}}">{{ page.date | date: "%B %d, '%y" }}</time>
 	</div>
@@ -39,7 +39,4 @@ layout: default
 		<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
 	</div>
 	{% endif %}
-	<div itemprop="author" itemscope itemtype="http://schema.org/Person">
-		<p><span itemprop="givenName">Caleb</span> <span itemprop="familyName">Gossler</span> is a <span itemProp="jobTitle">programmer</span> living in <span itemprop="homeLocation" itemscope itemtype="http://schema.org/Address"><span itemprop="addressLocality">Seattle</span>, <span itemprop="addressRegion">WA</span>, <span itemprop="addressCountry">USA</span></span>. You will probably be better off not reading this blog.</p>
-	</div>
 </div>

@@ -5,7 +5,7 @@ description: You know what they say about ruby and developer happiness! Let's ta
 date:   2013-10-20 23:57:30
 comments: true
 categories: programming
-tags: openstruct ruby mongodb expandoobject
+tags: openstruct ruby
 ---
 
 Recently I've been writing a little prototype in my quest to learn about RESTful APIs, and in particular, what advantages hypermedia brings to your API. This post isn't about REST, but it's about a little gem I discovered while working on my prototype. Let's take a quick look at a data structure in the ruby standard library called OpenStruct, which I found to be *very* helpful while prototyping.

@@ -6,7 +6,7 @@ description: I think I need to take a breather after this one.
 date:   2014-2-6 20:42:20
 comments: true
 categories: books
-tags: book review scheme lisp functional programming
+tags: book-review scheme lisp functional
 ---
 *Phew.* That was tough, and a *lot* of work. But I finally did it, I finished *The Little Schemer*. And it was *fun.* Usually I don't associate technical books with the word fun, but this is the exception.
 

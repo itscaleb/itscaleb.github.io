@@ -1,51 +1,72 @@
-div.post {
-  padding-top: 50px;
+body {
+    font-family: arial,sans-serif;
+    padding: 0;
+    margin: 0;
 }
+
+a {
+    text-decoration: none;
+}
+
+div.content {
+    padding: 1em 2em 1em 2em;
+}
+
 div.post img {
-  float: right;
-  padding: 1em 1em 1em 1em;
+    float: right;
+    padding: 1em 1em 1em 1em;
 }
+
+div.posts ul {
+    list-style-type: none;
+    display: inline;
+}
+
 div.intro {
-  border-bottom-style: dotted;
-  border-width: thin;
-  padding-bottom: 10px;
-  margin-bottom: 10px;
+    border-bottom: thin solid lightgrey;
+    padding-bottom: 10px;
+    margin-bottom: 10px;
 }
-ul.tags {
-  padding: 0;
+
+div.highlight {
+    padding: .25em .25em .25em .25em;
+    border-style: solid;
+    border-width: thin;
+    border-color: lightgrey;
 }
-ul.tags li {
-  list-style-type: none;
-  display: inline;
-  background-color: #f9f2f4;
-  padding: .25em .25em .25em .25em;
-  color: #c7254e;
-  border-radius: 4px;
+
+div.header {
+    padding: .25em .25em .25em .50em;
+    text-align: center;
+    background: #f1f1f1;
+    font-size: 20px;
+    color: #545454;
 }
-p[itemprop="description"] {
-  font-style: italic;
-  font-size: large;
-}
+
 div[itemprop="author"] {
-  color: #999;
   padding: .25em .25em .25em .25em;
-  background-color: #222;
-  border-style: dotted;
-  border-width: thin;
-  border-radius: 4px;
   text-align: center;
-  margin-top: 2em;
+  background: #f1f1f1;
+  color: #545454;
 }
-h1 {
-  margin: 0px;
-  padding: 0px;
+
+div[itemprop="blogPost"] {
+    border-bottom: thin solid lightgrey;
 }
-h2 {
-  font-size: large;
+
+div[itemprop="blogPost"] p {
+    color: #545454;
 }
-.site {
-  padding: 60px 15px;
-}
+
 ol.posts {
   list-style-type: none;
+}
+
+ul.tags li {
+    list-style-type: none;
+    display: inline;
+}
+
+h2 {
+    font-size: large;
 }

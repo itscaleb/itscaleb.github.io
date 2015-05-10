@@ -5,7 +5,7 @@ description: I'm such a procrastinator that I write code that procrastinates. At
 date:   2014-2-24 22:00:00
 comments: true
 categories: programming
-tags: lambdas delayed execution functional programming ruby
+tags: lambdas delayed-execution functional ruby
 ---
 Recently I was introduced to the idea of using lambdas for delayed execution of code. In short, the idea is that instead of executing a piece of code immediately, you wrap it in a lambda function and wait to call the lambda until the computation is needed. Usually it's presented in the context of a really difficult problem like a decision tree with a lot of really complex computations that may or may not possibly need to be executed. But this past weekend I came across a pretty simple problem that lazy evaluation solved quite nicely and still shows how useful it can be.
 

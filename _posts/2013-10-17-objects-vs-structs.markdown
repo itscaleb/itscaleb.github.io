@@ -5,7 +5,7 @@ date:   2013-10-17 22:30:33
 description: Some classes are better off as data structures with no behavior.
 comments: true
 categories: programming
-tags: objects structures propertioes oop encapsulation nitpick boring
+tags: objects structures encapsulation
 ---
 I'll keep it simple for my first blog post.
 
