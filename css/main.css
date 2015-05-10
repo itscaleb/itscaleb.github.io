@@ -43,7 +43,7 @@ div.header {
     color: #545454;
 }
 
-div[itemtype="http://schema.org/author"] {
+div[itemtype="http://schema.org/Person"] {
   padding: .25em .25em .25em .25em;
   text-align: center;
   background: #f1f1f1;
