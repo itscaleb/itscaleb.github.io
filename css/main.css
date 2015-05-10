@@ -43,7 +43,7 @@ div.header {
     color: #545454;
 }
 
-div[itemprop="author"] {
+div[itemtype="http://schema.org/author"] {
   padding: .25em .25em .25em .25em;
   text-align: center;
   background: #f1f1f1;
