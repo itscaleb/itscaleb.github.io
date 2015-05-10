@@ -12,7 +12,7 @@ tags: software development programming code caleb gossler
     <div itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
       <h2 itemprop="headline"><a href="{{ post.url }}">{{ post.title }}</a></h2>
       <p itemprop="description">{{ post.description }}</p>
-      <p><span><time itemprop="datePublished" datetime="{{ post.date | date: "%Y-%m-%d"}}">{{ post.date | date: "%b %d, '%y" }}</span> | Tags: {{ post.tags | sort | array_to_sentence_string }}</p>
+      <p><span><time itemprop="datePublished" datetime="{{ post.date | date: "%Y-%m-%d"}}">{{ post.date | date: "%b %d, '%y" }}</time></span> | Tags: {{ post.tags | sort | array_to_sentence_string }}</p>
     </div>
 
     {% endfor %}

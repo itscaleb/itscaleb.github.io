@@ -8,7 +8,7 @@ layout: default
 		<time itemprop="datePublished" datetime="{{ page.date | date: "%Y-%m-%d"}}">{{ page.date | date: "%B %d, '%y" }}</time>
 	</div>
 	{% if page.image %}
-	<img itemprop="thumbnailUrl" src="/images/{{page.image}}" </img>
+	<img itemprop="thumbnailUrl" src="/images/{{page.image}}" alt="image"/>
 	{% endif %}
 	<div itemprop="articleBody">
 		{{ content }}
