@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<title>Blogging with Emacs and org-publish</title>
+<!-- 2016-04-03 Sun 22:22 -->
+<meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta  name="generator" content="Org-mode" />
+<meta  name="author" content="Caleb Gossler" />
+<meta  name="description" content="As an Emacs user, I'm continually trying to move as much of my workflow into my favorite editor. I've been wanting to leverage org-publish to manage my website for a while, and I finally managed to get it working. Here are a few helpful tips to help you get going."
+ />
+<link rel="stylesheet" type="text/css" href="../assets/style.css">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script type="text/javascript">
+/*
+@licstart  The following is the entire license notice for the
+JavaScript code in this tag.
+
+Copyright (C) 2012-2013 Free Software Foundation, Inc.
+
+The JavaScript code in this tag is free software: you can
+redistribute it and/or modify it under the terms of the GNU
+General Public License (GNU GPL) as published by the Free Software
+Foundation, either version 3 of the License, or (at your option)
+any later version.  The code is distributed WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU GPL for more details.
+
+As additional permission under GNU GPL version 3 section 7, you
+may distribute non-source (e.g., minimized or compacted) forms of
+that code without the copy of the GNU GPL normally required by
+section 4, provided you include this license notice and a URL
+through which recipients can access the Corresponding Source.
+
+
+@licend  The above is the entire license notice
+for the JavaScript code in this tag.
+*/
+<!--/*--><![CDATA[/*><!--*/
+ function CodeHighlightOn(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(null != target) {
+     elem.cacheClassElem = elem.className;
+     elem.cacheClassTarget = target.className;
+     target.className = "code-highlighted";
+     elem.className   = "code-highlighted";
+   }
+ }
+ function CodeHighlightOff(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(elem.cacheClassElem)
+     elem.className = elem.cacheClassElem;
+   if(elem.cacheClassTarget)
+     target.className = elem.cacheClassTarget;
+ }
+/*]]>*///-->
+</script>
+</head>
+<body>
+<div id="content">
+<h1 class="title">Blogging with Emacs and org-publish</h1>
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#sec-1">Why?</a></li>
+<li><a href="#sec-2">How?</a></li>
+<li><a href="#sec-3">Configuration</a></li>
+<li><a href="#sec-4">Tips</a></li>
+<li><a href="#sec-5">Conclusion</a></li>
+</ul>
+</div>
+</div>
+<div id="outline-container-sec-1" class="outline-2">
+<h2 id="sec-1">Why?</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+If you already use Emacs and org-mode, there are plenty of reasons do manage your website from within Emacs.
+</p>
+<ul class="org-ul">
+<li>You already use org-mode to manage your information. Using it to manage your website is a natural extension to your workflow.
+</li>
+<li>Org-mode syntax is arguably much easier to use and edit than markdown syntax.
+</li>
+<li>You can easily publish other information you are managing in org-mode. If you publish your notes for example, you can view them across any device.
+</li>
+<li>If you are considering this, I probably don't need to mention how much more productive you are in Emacs.
+</li>
+<li>Like most things Emacs, it is infinitely customizable by writing some elisp (although this isn't a requirement to use it).
+</li>
+</ul>
+<p>
+I'm going to assume that you already use org-mode. If you don't, you should look into it because it's one of Emacs' killer features.
+</p>
+</div>
+</div>
+<div id="outline-container-sec-2" class="outline-2">
+<h2 id="sec-2">How?</h2>
+<div class="outline-text-2" id="text-2">
+<p>
+Org-mode comes with a great tool, <a href="http://orgmode.org/manual/Publishing.html">org-publish</a>, for publishing a project of interlinked org files as a website of interlinked html files. Although I'm only using it to publish a website, it is capable of much more.
+Using org-publish requires a bit of configuration, but it's pretty straight forward. It can be distilled to just a few steps:
+</p>
+<ol class="org-ol">
+<li>Specify the source directory of your project. This directory will contain the org files you want to publish.
+</li>
+<li>Specify the destination directory for your website. This directory will contain the exported html files created from the source org files.
+<ul class="org-ul">
+<li>You can specify the distination using <a href="https://www.gnu.org/software/tramp/tramp-emacs.html">TRAMP</a> syntax to have these files automatically copied to remote locations via SSH, etc.
+</li>
+</ul>
+</li>
+<li>Decide what <a href="http://orgmode.org/manual/Publishing-options.html">publishing options</a> you need for your project.
+</li>
+</ol>
+<p>
+You will probably end up creating several projects. For example, I have one for my posts, one for static pages, and another for static assets like CSS and JavaScript. You can group all of these "sub projects" into a single "meta project" that can publish them all at once (this sounds confusing but is pretty simple as you will see).
+</p>
+</div>
+</div>
+<div id="outline-container-sec-3" class="outline-2">
+<h2 id="sec-3">Configuration</h2>
+<div class="outline-text-2" id="text-3">
+<p>
+The majority of configuration is done using the variable <a href="http://orgmode.org/manual/Project-alist.html">org-publish-project-alist</a>, which is an association list that maps projects to their publishing options.
+Here's a simple example taken from the documentation:
+</p>
+<div class="org-src-container">
+
+<pre class="src src-emacs-lisp">(setq org-publish-project-alist
+  '((<span style="color: #8abeb7;">"org"</span>
+     <span style="color: #b294bb;">:base-directory</span> <span style="color: #8abeb7;">"~/org/"</span>
+     <span style="color: #b294bb;">:publishing-directory</span> <span style="color: #8abeb7;">"~/public_html"</span>
+     <span style="color: #b294bb;">:section-numbers</span> nil
+     <span style="color: #b294bb;">:with-toc</span> nil
+     <span style="color: #b294bb;">:html-head</span> <span style="color: #8abeb7;">"&lt;link rel=\"stylesheet\"</span>
+<span style="color: #8abeb7;">                href=\"../other/mystyle.css\"</span>
+<span style="color: #8abeb7;">                type=\"text/css\"/&gt;"</span>)))
+</pre>
+</div>
+<p>
+This example configuration specifies the source directory, destination directory, and uses some publishing options to turn off the generation of table of contents and section numbers.
+</p>
+</div>
+</div>
+<div id="outline-container-sec-4" class="outline-2">
+<h2 id="sec-4">Tips</h2>
+<div class="outline-text-2" id="text-4">
+<ul class="org-ul">
+<li>If you are setting the same option across all the projects you set up, set it as a variable so that it is picked up automatically by all your projects. For example, if you look at the <a href="http://orgmode.org/manual/Publishing-options.html">publishing options</a>, it says that the "html-head" option can be set by the "org-html-head" variable.
+</li>
+</ul>
+<div class="org-src-container">
+
+<pre class="src src-emacs-lisp">(setq org-html-head <span style="color: #8abeb7;">"&lt;link rel=\"stylesheet\" type=\"text/css\" href=\"../assets/style.css\"&gt;"</span>)
+</pre>
+</div>
+<ul class="org-ul">
+<li>Start with a very basic configuration, and customize it as you go.
+</li>
+<li>Use the "auto-sitemap" option to generate a landing page listing all your posts for a given project. You may decide that the default function that generates the sitemap, "org-publish-org-sitemap", doesn't do exactly what you want. In that case, you can specify another function that your write yourself. Start by looking up the source code for "org-publish-org-sitemap", use it as a start point, and edit it for your needs.
+</li>
+</ul>
+</div>
+</div>
+<div id="outline-container-sec-5" class="outline-2">
+<h2 id="sec-5">Conclusion</h2>
+<div class="outline-text-2" id="text-5">
+<p>
+This should hopefully give you a good starting point. Below is my configuration in case it is helpful. The last line contains an example of a meta-project containing multiple sub-projects. Now all I have to do to publish my entire website is run "M-x org-publish &lt;ret&gt; website"
+</p>
+<div class="org-src-container">
+
+<pre class="src src-emacs-lisp">(setq org-html-postamble-format '((<span style="color: #8abeb7;">"en"</span> <span style="color: #8abeb7;">"&lt;p class=\"author\"&gt;Author: %a&lt;/p&gt;&lt;p class=\"date\"&gt;Last Modified: %C&lt;/p&gt;"</span>)))
+(setq org-html-head-include-default-style nil)
+(setq org-html-head <span style="color: #8abeb7;">"&lt;link rel=\"stylesheet\" type=\"text/css\" href=\"../assets/style.css\"&gt;"</span>)
+(setq org-publish-project-alist
+      '((<span style="color: #8abeb7;">"assets"</span>
+         <span style="color: #b294bb;">:base-directory</span> <span style="color: #8abeb7;">"~/org/website/assets"</span>
+         <span style="color: #b294bb;">:base-extension</span> <span style="color: #8abeb7;">"css</span><span style="color: #f0c674;">\\</span><span style="color: #b294bb;">|</span><span style="color: #8abeb7;">js</span><span style="color: #f0c674;">\\</span><span style="color: #b294bb;">|</span><span style="color: #8abeb7;">png</span><span style="color: #f0c674;">\\</span><span style="color: #b294bb;">|</span><span style="color: #8abeb7;">jpg</span><span style="color: #f0c674;">\\</span><span style="color: #b294bb;">|</span><span style="color: #8abeb7;">gif</span><span style="color: #f0c674;">\\</span><span style="color: #b294bb;">|</span><span style="color: #8abeb7;">pdf</span><span style="color: #f0c674;">\\</span><span style="color: #b294bb;">|</span><span style="color: #8abeb7;">mp3</span><span style="color: #f0c674;">\\</span><span style="color: #b294bb;">|</span><span style="color: #8abeb7;">ogg</span><span style="color: #f0c674;">\\</span><span style="color: #b294bb;">|</span><span style="color: #8abeb7;">swf"</span>
+         <span style="color: #b294bb;">:publishing-directory</span> <span style="color: #8abeb7;">"~/www/assets"</span>
+         <span style="color: #b294bb;">:recursive</span> t
+         <span style="color: #b294bb;">:publishing-function</span> org-publish-attachment)
+        (<span style="color: #8abeb7;">"static-pages"</span>
+         <span style="color: #b294bb;">:base-directory</span> <span style="color: #8abeb7;">"~/org/website"</span>
+         <span style="color: #b294bb;">:base-extention</span> <span style="color: #8abeb7;">"org"</span>
+         <span style="color: #b294bb;">:section-numbers</span> nil
+         <span style="color: #b294bb;">:with-toc</span> nil
+         <span style="color: #b294bb;">:html-postamble</span> t
+         <span style="color: #b294bb;">:publishing-directory</span> <span style="color: #8abeb7;">"~/www"</span>
+         <span style="color: #b294bb;">:publishing-function</span> org-html-publish-to-html)
+        (<span style="color: #8abeb7;">"posts"</span>
+         <span style="color: #b294bb;">:base-directory</span> <span style="color: #8abeb7;">"~/org/website/posts"</span>
+         <span style="color: #b294bb;">:base-extention</span> <span style="color: #8abeb7;">"org"</span>
+         <span style="color: #b294bb;">:publishing-directory</span> <span style="color: #8abeb7;">"~/www/posts"</span>
+         <span style="color: #b294bb;">:publishing-function</span> org-html-publish-to-html
+         <span style="color: #b294bb;">:section-numbers</span> nil
+         <span style="color: #b294bb;">:auto-sitemap</span> t
+         <span style="color: #b294bb;">:html-postamble</span> t
+         <span style="color: #b294bb;">:sitemap-title</span> <span style="color: #8abeb7;">"Latest Posts"</span>
+         <span style="color: #b294bb;">:sitemap-function</span> my-org-publish-org-sitemap
+         <span style="color: #b294bb;">:sitemap-filename</span> <span style="color: #8abeb7;">"index.org"</span>
+         <span style="color: #b294bb;">:sitemap-date-format</span> <span style="color: #8abeb7;">"%b %d '%y"</span>)
+        (<span style="color: #8abeb7;">"website"</span>
+         <span style="color: #b294bb;">:components</span> (<span style="color: #8abeb7;">"assets"</span> <span style="color: #8abeb7;">"static-pages"</span> <span style="color: #8abeb7;">"posts"</span>))))
+</pre>
+</div>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<p class="author">Author: Caleb Gossler</p><p class="date">Last Modified: 2016-04-03 Sun 22:22</p>
+</div>
+</body>
+</html>

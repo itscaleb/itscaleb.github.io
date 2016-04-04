@@ -1,0 +1,57 @@
+body {
+    padding: 1em 2em 1em 2em;
+}
+
+h1.title {
+    text-align: right;
+}
+
+h2 a {
+    text-decoration: none;
+}
+
+div#postamble {
+    border-top-style: groove;
+    border-top-width: thin;
+}
+
+.footpara:nth-child(2) {
+    display: inline;
+}
+
+.footpara {
+    display: block;
+}
+
+.footdef  {
+    margin-bottom: 1em;
+}
+
+.code-highlighted {
+    background-color: #ffff00;
+}
+
+pre {
+    border: 1px solid #ccc;
+    box-shadow: 3px 3px 3px #eee;
+    padding: 8pt;
+    font-family: monospace;
+    overflow: auto;
+    margin: 1.2em;
+}
+
+pre.src {
+    position: relative;
+    overflow: visible;
+    padding-top: 1.2em;
+}
+
+pre.src:before {
+    display: none;
+    position: absolute;
+    background-color: white;
+    top: -10px;
+    right: 10px;
+    padding: 3px;
+    border: 1px solid black;
+}
