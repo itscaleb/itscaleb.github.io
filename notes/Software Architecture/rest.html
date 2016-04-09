@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<title>REST Architectural Style</title>
+<!-- 2016-04-09 Sat 00:59 -->
+<meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta  name="generator" content="Org-mode" />
+<meta  name="author" content="Caleb Gossler" />
+<link rel="stylesheet" type="text/css" href="/assets/style.css">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script type="text/javascript">
+/*
+@licstart  The following is the entire license notice for the
+JavaScript code in this tag.
+
+Copyright (C) 2012-2013 Free Software Foundation, Inc.
+
+The JavaScript code in this tag is free software: you can
+redistribute it and/or modify it under the terms of the GNU
+General Public License (GNU GPL) as published by the Free Software
+Foundation, either version 3 of the License, or (at your option)
+any later version.  The code is distributed WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU GPL for more details.
+
+As additional permission under GNU GPL version 3 section 7, you
+may distribute non-source (e.g., minimized or compacted) forms of
+that code without the copy of the GNU GPL normally required by
+section 4, provided you include this license notice and a URL
+through which recipients can access the Corresponding Source.
+
+
+@licend  The above is the entire license notice
+for the JavaScript code in this tag.
+*/
+<!--/*--><![CDATA[/*><!--*/
+ function CodeHighlightOn(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(null != target) {
+     elem.cacheClassElem = elem.className;
+     elem.cacheClassTarget = target.className;
+     target.className = "code-highlighted";
+     elem.className   = "code-highlighted";
+   }
+ }
+ function CodeHighlightOff(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(elem.cacheClassElem)
+     elem.className = elem.cacheClassElem;
+   if(elem.cacheClassTarget)
+     target.className = elem.cacheClassTarget;
+ }
+/*]]>*///-->
+</script>
+</head>
+<body>
+<div id="content">
+<h1 class="title">REST Architectural Style</h1>
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#sec-1">Introduction to my notes</a></li>
+<li><a href="#sec-2">What is REST?</a>
+<ul>
+<li><a href="#sec-2-1">REST is the architecture of the world-wide-web</a></li>
+<li><a href="#sec-2-2">REST is the result of building an architecture that has the following properties (summarized at a high level by me):</a></li>
+<li><a href="#sec-2-3">REST is an <i>Architectural Style</i></a></li>
+<li><a href="#sec-2-4">REST focuses on scalability and evolvability through a uniform interface.</a></li>
+</ul>
+</li>
+<li><a href="#sec-3">Practical Benefits of REST</a></li>
+<li><a href="#sec-4">Conclusion</a></li>
+</ul>
+</div>
+</div>
+<div id="outline-container-sec-1" class="outline-2">
+<h2 id="sec-1">Introduction to my notes</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+REST is an <i>architectural style</i> that Roy Fielding introduced in his thesis <i>Architectural Styles and the Design of Network-based Software Architectures</i>. I found this paper interesting for a couple of reasons:
+</p>
+<ul class="org-ul">
+<li>Most of the paper is not actually about REST. It is about software architecture, and it introduces a framework for selecting the correct <i>architectural style</i> for your network based system. This framework is a methodological approach for designing systems and is a useful addition to your tool belt.
+</li>
+<li>It also contains an interesting history lesson about the early www and its requirements, mistakes, and learning from those mistakes in order to architect the modern web.
+</li>
+<li>It has a lot less to do with APIs than I thought.
+</li>
+</ul>
+<p>
+These are a collection of my notes and thoughts while I was studying the topic. It's not meant to be a comprehensive review of the topic (although I do hope to add more content around some parts I handwaved over), but an aid in building some intuition. Hopefully they will help digest what REST is, and inspire you to read Roy Fielding's dissertation.
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-2" class="outline-2">
+<h2 id="sec-2">What is REST?</h2>
+<div class="outline-text-2" id="text-2">
+<p>
+I'll try to describe REST a few different ways. I'll start off simple and then try to describe it by introducing some vocaubulary Fielding uses in his dissertation.
+</p>
+</div>
+<div id="outline-container-sec-2-1" class="outline-3">
+<h3 id="sec-2-1">REST is the architecture of the world-wide-web</h3>
+<div class="outline-text-3" id="text-2-1">
+<p>
+In the early 90's, it became clear that the WWW would become extremely popular. Unfortunately the early web was not prepared for that kind of rapid growth and the architecture had to be revisited. But there was a problem&#x2026; a description of the architecture didn't exist. The WWW was designed by informal notes, a couple of papers, and discussion on mailing lists. To improve on the architecture, the architecture must first be extrapolated form the early web.
+REST is this extrapolated archictecture, along with improvements needed to support the modern web.
+</p>
+</div>
+</div>
+<div id="outline-container-sec-2-2" class="outline-3">
+<h3 id="sec-2-2">REST is the result of building an architecture that has the following properties (summarized at a high level by me):</h3>
+<div class="outline-text-3" id="text-2-2">
+<ul class="org-ul">
+<li>Evolvability
+</li>
+<li>Extendability
+</li>
+<li>Scalability
+</li>
+<li>Simplicity
+</li>
+</ul>
+</div>
+</div>
+<div id="outline-container-sec-2-3" class="outline-3">
+<h3 id="sec-2-3">REST is an <i>Architectural Style</i></h3>
+<div class="outline-text-3" id="text-2-3">
+<ul class="org-ul">
+<li>An <i>architectural style</i> is a set of <i>architectural constraints</i>.
+</li>
+<li><i>Architectural constraints</i> bring about a set of properties on your system.
+<ul class="org-ul">
+<li>You already know one example of a contraint: <i>client-server</i>. Properties that the <i>client-server</i> constraint induces on your system are <i>evolvability</i> and <i>scalability</i>.
+</li>
+</ul>
+</li>
+<li>The set of architectural constraints that describe REST are:
+<ul class="org-ul">
+<li>Client Server
+</li>
+<li>Stateless
+</li>
+<li>Cache
+</li>
+<li>Uniform Interface
+</li>
+<li>Layered System
+</li>
+<li>Code-on-demand (optional)
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div id="outline-container-sec-2-4" class="outline-3">
+<h3 id="sec-2-4">REST focuses on scalability and evolvability through a uniform interface.</h3>
+<div class="outline-text-3" id="text-2-4">
+<ul class="org-ul">
+<li>The uniform interface constraint distinguishes REST from other network based architectural styles.
+</li>
+<li>By having components communicate through a uniform interface, implementations become decoupled from the services that they provide.
+</li>
+<li>For the WWW, the uniform interface is implemented through resources, resource representations, self-descriptive messages, and hypermedia.
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div id="outline-container-sec-3" class="outline-2">
+<h2 id="sec-3">Practical Benefits of REST</h2>
+<div class="outline-text-2" id="text-3">
+<ul class="org-ul">
+<li>If you are part of a software system that involves multiple organizations (this can also be multiple organizations within a single company), it is very difficult to decide how to pass data between the different components of the system. Especially so when those systems cross organizational boundaries. The <i>uniform interface</i> allows you to standardize on messages between the components of your system rather than the data.
+
+<p>
+For example, consider HTML forms. HTML forms are hypermedia that describes (in the message) what data should be sent between two systems, and how that data should be sent. As long as the systems implement the contract described through the message, the service is decoupled from the implementation of the service and decoupled from details such as internal data models used throughout the system.
+</p>
+</li>
+
+<li>Another benefit of REST is HATEOS (hypermedia as the engine of application state). This means that the hypermedia links that exist in a message describe the state of the system, and the links change as the state of the system changes. You can create a client that is late binded<sup><a id="fnr.1" name="fnr.1" class="footref" href="#fn.1">1</a></sup> to the links in the message, which guide the client through what we are providing as a service. Consider how valuable this is if you have multiple independently deployed clients (websites, phone apps, desktop apps, etc) that consume the same service. If they understand the <i>uniform interface</i> and are late binded to the links in the message, the service can change how it "guides" the clients dynamically.
+
+<p>
+Think of a message as the current state in a state machine, and a hypermedia link as instructions on how to bring the system to a new state. Clients are late binded to the transitions that exist in a message, which can change and be updated independently of the clients.
+</p>
+</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-sec-4" class="outline-2">
+<h2 id="sec-4">Conclusion</h2>
+<div class="outline-text-2" id="text-4">
+<p>
+Every application has a set of requirements, and each architectural constraint induces both positive and negative properties on your system. Your goal is to create a set of properties that fulfils the requirements of your system.
+</p>
+
+<p>
+Read Roy Fielding's <a href="http://www.ics.uci.edu/~fielding/pubs/dissertation/top.htm">dissertation</a> for more information.
+</p>
+</div>
+</div>
+<div id="footnotes">
+<h2 class="footnotes">Footnotes: </h2>
+<div id="text-footnotes">
+
+<div class="footdef"><sup><a id="fn.1" name="fn.1" class="footnum" href="#fnr.1">1</a></sup> <p class="footpara">
+Comment by Roy Fielding on late binding: <a href="http://intertwingly.net/blog/2008/03/23/Connecting">http://intertwingly.net/blog/2008/03/23/Connecting</a>
+</p></div>
+
+
+</div>
+</div></div>
+<div id="postamble" class="status">
+<p class="author">Author: Caleb Gossler</p><p class="date">Last Modified: 2016-04-09 Sat 00:59</p>
+</div>
+</body>
+</html>
