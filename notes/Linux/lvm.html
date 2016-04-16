@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<title>LVM - Logical Volume Manager</title>
+<!-- 2016-04-16 Sat 00:37 -->
+<meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta  name="generator" content="Org-mode" />
+<meta  name="author" content="Caleb Gossler" />
+<link rel="stylesheet" type="text/css" href="/assets/style.css">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script type="text/javascript">
+/*
+@licstart  The following is the entire license notice for the
+JavaScript code in this tag.
+
+Copyright (C) 2012-2013 Free Software Foundation, Inc.
+
+The JavaScript code in this tag is free software: you can
+redistribute it and/or modify it under the terms of the GNU
+General Public License (GNU GPL) as published by the Free Software
+Foundation, either version 3 of the License, or (at your option)
+any later version.  The code is distributed WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU GPL for more details.
+
+As additional permission under GNU GPL version 3 section 7, you
+may distribute non-source (e.g., minimized or compacted) forms of
+that code without the copy of the GNU GPL normally required by
+section 4, provided you include this license notice and a URL
+through which recipients can access the Corresponding Source.
+
+
+@licend  The above is the entire license notice
+for the JavaScript code in this tag.
+*/
+<!--/*--><![CDATA[/*><!--*/
+ function CodeHighlightOn(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(null != target) {
+     elem.cacheClassElem = elem.className;
+     elem.cacheClassTarget = target.className;
+     target.className = "code-highlighted";
+     elem.className   = "code-highlighted";
+   }
+ }
+ function CodeHighlightOff(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(elem.cacheClassElem)
+     elem.className = elem.cacheClassElem;
+   if(elem.cacheClassTarget)
+     target.className = elem.cacheClassTarget;
+ }
+/*]]>*///-->
+</script>
+</head>
+<body>
+<div id="content">
+<h1 class="title">LVM - Logical Volume Manager</h1>
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#sec-1">Introduction</a></li>
+<li><a href="#sec-2">Components of LVM</a>
+<ul>
+<li><a href="#sec-2-1">Physical Volume</a></li>
+<li><a href="#sec-2-2">Logical Volume Groups</a></li>
+<li><a href="#sec-2-3">Logical Volume</a></li>
+<li><a href="#sec-2-4">Physical Extent</a></li>
+</ul>
+</li>
+<li><a href="#sec-3">Steps Required to Configure LVM</a></li>
+<li><a href="#sec-4">Advantages to Using LVM</a></li>
+</ul>
+</div>
+</div>
+<p>
+<i>NOTE: This is a work in progress. Expect changes and updates.</i>
+</p>
+
+<p>
+These notes provide a terse, high level overview of what LVM offers. It defines the components involved and briefly discusses why it is useful.
+</p>
+<div id="outline-container-sec-1" class="outline-2">
+<h2 id="sec-1">Introduction</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+LVM is a tool for managing logical volumes, which are block devices abstracted on top of physical disks. This abstraction give you much more flexibility than accessing your physical hard disks directly.
+For example, you can resize logical volumes, mirror them, stripe them, allocate more of them, etc..
+</p>
+
+<p>
+LVM provides these services through the <i>device mapper</i>, a framework in the Linux kernel for mapping block devices to virtual block devices.
+</p>
+</div>
+</div>
+<div id="outline-container-sec-2" class="outline-2">
+<h2 id="sec-2">Components of LVM</h2>
+<div class="outline-text-2" id="text-2">
+</div><div id="outline-container-sec-2-1" class="outline-3">
+<h3 id="sec-2-1">Physical Volume</h3>
+<div class="outline-text-3" id="text-2-1">
+<p>
+Physical volumes are the hard disks and their partitions that you build the logical volume abstraction on top of. Ultimately, when you write or read to logical volumes, the operations will be mapped to these physical volumes.
+</p>
+</div>
+</div>
+<div id="outline-container-sec-2-2" class="outline-3">
+<h3 id="sec-2-2">Logical Volume Groups</h3>
+<div class="outline-text-3" id="text-2-2">
+<p>
+You can think of a <i>logical volume group</i> as a pool of storage made collectively out of the physical volumes. The logical volumes you create will be allocated storage space from this pool.
+If a logical volume group has free space that has not been allocated to logical volumes, you can have some flexibility in resizing logical volumes later.
+</p>
+
+<p>
+<i>NOTE: /boot cannot be on a logical volume group or the bootloader will not be able to find it</i>
+</p>
+
+<div class="figure">
+<p><img src="../../assets/lvm-group.png" alt="lvm-group.png" />
+</p>
+<p><span class="figure-number">Figure 1:</span> An example containing three partitions from two discs forming a <i>logical volume group</i>.</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-2-3" class="outline-3">
+<h3 id="sec-2-3">Logical Volume</h3>
+<div class="outline-text-3" id="text-2-3">
+<p>
+Volume groups are divided into <b>logical volumes</b> which have a mount point and file system. The operating system views this as any other block device.
+</p>
+
+<div class="figure">
+<p><img src="../../assets/lvm-volume.png" alt="lvm-volume.png" />
+</p>
+<p><span class="figure-number">Figure 2:</span> Three <i>logical volumes</i> allocated from a <i>logical volume group</i>. They have a file system and a mount point.</p>
+</div>
+</div>
+</div>
+<div id="outline-container-sec-2-4" class="outline-3">
+<h3 id="sec-2-4">Physical Extent</h3>
+<div class="outline-text-3" id="text-2-4">
+<p>
+A physical extant is a unit of allocation that can be allocated to logical volumes from a logical volume group. If a logical volume is created, it is allocated physical extents from the logical volume group. If a logical volume is resized, it takes unallocated physical extents from the logical volume group. When a logical volume is shrunk, physical extents are returned to the logical volume group.
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-3" class="outline-2">
+<h2 id="sec-3">Steps Required to Configure LVM</h2>
+<div class="outline-text-2" id="text-3">
+<p>
+Now that we know the components involved, it becomes clear how you use LVM to create logical volumes on a system:
+</p>
+<ol class="org-ol">
+<li>Create physical volumes from hard drives and their partitions.
+</li>
+<li>Create logical volume groups from these physical volumes.
+</li>
+<li>Create logical volumes from the volume group and assign mount points.
+</li>
+</ol>
+</div>
+</div>
+<div id="outline-container-sec-4" class="outline-2">
+<h2 id="sec-4">Advantages to Using LVM</h2>
+<div class="outline-text-2" id="text-4">
+<p>
+Why go through the trouble to set up logical volumes instead of just accessing your disks directly?
+</p>
+<ul class="org-ul">
+<li>When logical volume "partitions" reach their full capacity, free space from the volume group can be added to a logical volume.
+</li>
+<li>New disks can be added to the volume group which provides more free space to allocate to the logical volumes.
+</li>
+<li>Logical volumes can provide a transformation to the read and write operations before they are performed on the physical volumes, such as encryption.
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<p class="author">Author: Caleb Gossler</p><p class="date">Last Modified: 2016-04-16 Sat 00:36</p>
+</div>
+</body>
+</html>
