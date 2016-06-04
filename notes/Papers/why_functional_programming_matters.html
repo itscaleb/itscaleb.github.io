@@ -1,0 +1,376 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<title>Why Functional Programming Matters</title>
+<!-- 2016-06-03 Fri 23:49 -->
+<meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta  name="generator" content="Org-mode" />
+<meta  name="author" content="Caleb Gossler" />
+<link rel="stylesheet" type="text/css" href="/assets/style.css">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script type="text/javascript">
+/*
+@licstart  The following is the entire license notice for the
+JavaScript code in this tag.
+
+Copyright (C) 2012-2013 Free Software Foundation, Inc.
+
+The JavaScript code in this tag is free software: you can
+redistribute it and/or modify it under the terms of the GNU
+General Public License (GNU GPL) as published by the Free Software
+Foundation, either version 3 of the License, or (at your option)
+any later version.  The code is distributed WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU GPL for more details.
+
+As additional permission under GNU GPL version 3 section 7, you
+may distribute non-source (e.g., minimized or compacted) forms of
+that code without the copy of the GNU GPL normally required by
+section 4, provided you include this license notice and a URL
+through which recipients can access the Corresponding Source.
+
+
+@licend  The above is the entire license notice
+for the JavaScript code in this tag.
+*/
+<!--/*--><![CDATA[/*><!--*/
+ function CodeHighlightOn(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(null != target) {
+     elem.cacheClassElem = elem.className;
+     elem.cacheClassTarget = target.className;
+     target.className = "code-highlighted";
+     elem.className   = "code-highlighted";
+   }
+ }
+ function CodeHighlightOff(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(elem.cacheClassElem)
+     elem.className = elem.cacheClassElem;
+   if(elem.cacheClassTarget)
+     target.className = elem.cacheClassTarget;
+ }
+/*]]>*///-->
+</script>
+</head>
+<body>
+<div id="content">
+<h1 class="title">Why Functional Programming Matters</h1>
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#sec-1">Introduction</a></li>
+<li><a href="#sec-2">What is Functional Programming?</a></li>
+<li><a href="#sec-3">Modularity in Software</a></li>
+<li><a href="#sec-4">A Better Description of Functional Programming</a>
+<ul>
+<li><a href="#sec-4-1">Higher Order Functions</a>
+<ul>
+<li><a href="#sec-4-1-1">Example: <i>reduce</i></a></li>
+</ul>
+</li>
+<li><a href="#sec-4-2">Lazy Evaluation</a>
+<ul>
+<li><a href="#sec-4-2-1">Example: Square Root Algorithm</a></li>
+<li><a href="#sec-4-2-2">Example: Game Trees</a></li>
+<li><a href="#sec-4-2-3">Additional Examples</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#sec-5">What is functional Programming? (revisited)</a></li>
+<li><a href="#sec-6">Conclusion (my thoughts)</a></li>
+</ul>
+</div>
+</div>
+<div id="outline-container-sec-1" class="outline-2">
+<h2 id="sec-1">Introduction</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+<i>Why Functional Programming Matters</i> is a paper by John Hughes written in 1984, and was slightly revised in 1989. It is an introductory paper that describes the strengths of functional programming and argues that it is vitally important to the real world.
+These are my notes I took while reading the paper. Some examples are skipped, and the ones I do cover are hand wavey at best in pseudo language. Hopefully I cover the main points, but refer to the paper if the examples are not clear.
+</p>
+</div>
+</div>
+<div id="outline-container-sec-2" class="outline-2">
+<h2 id="sec-2">What is Functional Programming?</h2>
+<div class="outline-text-2" id="text-2">
+<p>
+When trying to explain what functional programming is, we typically provide the following properties:
+</p>
+<ul class="org-ul">
+<li>There is no assignment, so there are no variables.
+</li>
+<li>Your code has no side effects.
+</li>
+<li>Functions are <i>referentially transparant</i>, meaning functions can be evaluated at any time and they will always evaluate to the same value.
+<ul class="org-ul">
+<li>I think this might just be another way of stating that there is no assignment and no side effects.
+</li>
+</ul>
+</li>
+</ul>
+<p>
+The problem with this explaination is that these properties only explain what funtional programming <i>is not</i>, not <i>what it is</i>. 
+How can a programmer take that explanation and strive to write functional code? Can one <i>not</i> do assignment particularly well, or <i>not</i> write code with side effects particularly well?
+This explanation doesn't give a programmer something to strive for in their code.
+Can we come up with a better explanation of what functional programming is that can give a programmer something to strive for and explain why it is important?
+</p>
+</div>
+</div>
+<div id="outline-container-sec-3" class="outline-2">
+<h2 id="sec-3">Modularity in Software</h2>
+<div class="outline-text-2" id="text-3">
+<p>
+It's accepted that modularity is key to writing software, especially as it grows in complexity. Modularity brings about productivity improvements, such as speed, code reuse, and testability.
+When solving a problem, it is solved by first breaking it up into sub-problems, the sub-problems into their own sub-problems,  and then <i>gluing</i> those solutions together.
+</p>
+
+<p>
+Functional programming provides important ways to modularize these sub-problems and glue them together into a program that is not possible in traditional languages.
+</p>
+</div>
+</div>
+<div id="outline-container-sec-4" class="outline-2">
+<h2 id="sec-4">A Better Description of Functional Programming</h2>
+<div class="outline-text-2" id="text-4">
+<p>
+So what are these types of <i>glue</i> that functional programming provides? This is what makes functional programming unique, so by taking a look at how functional programs are modularized we can come up with a better description.
+</p>
+</div>
+<div id="outline-container-sec-4-1" class="outline-3">
+<h3 id="sec-4-1">Higher Order Functions</h3>
+<div class="outline-text-3" id="text-4-1">
+<p>
+Higher order functions allow simple functions to be glued together to form more complex ones. They are functions that have a function as a parameter and/or return a function.
+</p>
+</div>
+<div id="outline-container-sec-4-1-1" class="outline-4">
+<h4 id="sec-4-1-1">Example: <i>reduce</i></h4>
+<div class="outline-text-4" id="text-4-1-1">
+<p>
+We can start with one function that we'll call <i>reduce</i>, which is used to process lists. reduce is a function that recursively iterates through a list, applies a specialized function to each element to the list, and returns the value of the applied function up the recursive stack.
+Reduce looks like
+</p>
+<pre class="example">
+(reduce f value)
+</pre>
+<p>
+Where f is a specializing function, and value is the base case value for the recursion. When applied to f and value, reduce returns a function awaiting a list.
+We can use reduce to create a function that sums up a list of numbers.
+</p>
+<pre class="example">
+sum = reduce add 0
+sum [1 2 3 4] // evaluates to 10
+</pre>
+<p>
+The call stack looks like (add 1(add 2 (add 3 (add 4 0)))).
+</p>
+
+<p>
+We can use reduce to create a copy of a list.
+</p>
+<pre class="example">
+copy = reduce cons []
+copy [1 2 3 4] // evaluates to [1 2 3 4]
+</pre>
+<p>
+The function cons takes two arguments, a value and a list, and puts the value on the front of the list. And for the base case of the recursion, we give it an empty list.
+The call stack looks like (cons 1 (cons 2 (cons 3 (cons 4 [])))) which gives us the list [1 2 3 4].
+</p>
+
+<p>
+We can use reduce to implement map. Map applies a function to each element of a list, and returns a new list of the values of those applied functions.
+</p>
+<pre class="example">
+fandcons = cons . f
+map = reduce fandcons []
+
+double x = 2 * x
+map double [1 2 3 4] // evaluates to [2 4 6 8]
+</pre>
+<p>
+<i>Note:</i> The "&sdot;" operator is function composition. <i>(f &sdot; g) h</i> is equivalent to <i>f (g h)</i>.
+</p>
+
+<p>
+<i>Reduce</i> shows us how you can glue modular functions together to create more powerful functions. <i>Reduce</i> is a generic function that knows how to operate on a list, and it applies the provided specializing function to each element of the list.
+</p>
+
+<p>
+The ideas here can also be applied to other data structures other than lists. The paper covers <i>redtree</i>, a function similar to reduce except that it operates on trees. With <i>redtree</i> we can implement <i>sumtree</i> and <i>maptree</i> very similar to how we did with lists.
+</p>
+
+<p>
+Whenever a new data structure is defined, new higher order functions should be written to process it. This makes it easy to process and encapsulates the details of the implementation.
+</p>
+</div>
+</div>
+</div>
+<div id="outline-container-sec-4-2" class="outline-3">
+<h3 id="sec-4-2">Lazy Evaluation</h3>
+<div class="outline-text-3" id="text-4-2">
+<p>
+Lazy evaluation is another kind of glue that functional programming provides.
+Let's say you have two functions, <i>f</i> and <i>g</i>. <i>f</i> computes output, which is provided to <i>g</i>. They are run in strict synchronization, and <i>f</i> only computes output when g tries to read some input. This is called lazy evaluation, and prevents large amounts of data to be stored in memory or written to a file as a temporary buffer.
+</p>
+
+<p>
+A neat feature resulting from this is that f can be non-terminating, producing infinate output for <i>g</i>. Since <i>f</i> will be terminated when <i>g</i> is done reading output, the termination condition is separated from the loop body which generates the output. You can therefore modularize a program into a <i>generator</i>, which generates a large number of possible answers, and a <i>selector</i> which chosses appropriate ones.
+</p>
+</div>
+
+<div id="outline-container-sec-4-2-1" class="outline-4">
+<h4 id="sec-4-2-1">Example: Square Root Algorithm</h4>
+<div class="outline-text-4" id="text-4-2-1">
+<p>
+We can take advantage of this by implementing the Newton-Raphson square roots algorithm. The algorithm works by starting with an initial approximation for the square root of a number which we'll call a<sub>0</sub>.
+From that initial approximation, we can come up with better and better ones using the rule:
+</p>
+<pre class="example">
+a(n+1) = (a(n) + N/a(n)) / 2
+</pre>
+<p>
+If the approximations approach some limit <i>a</i>, then <i>a</i> is the square root of <i>N</i>. If we provide a tolerance and stop the approximation once two successive approximations differ by less than the tolerance, we can approximate the square root.
+Using a typical programming language it would be programmed iteratively in a loop like the following:
+</p>
+<pre class="example">
+sqrt(tol, a0, N) {
+  x = a0
+  y = a0 + 2*tol
+  while(true) {
+    if (abs(x - y) &lt; tol) {
+      return x;
+    }
+    y = x;
+    x = (x + N/x) / 2;
+  }
+}
+</pre>
+
+<p>
+Unfortunately, the sqrt function is indivisible when written like this. Using lazy evaluation we can write it in a modular fashion and reuse those parts in other code.
+</p>
+
+<p>
+First we define the function <i>next</i> which computes an approximation when given the previous one:
+</p>
+<pre class="example">
+next N x = (x + N/x) / 2
+</pre>
+<p>
+Next we define a function <i>repeat</i> which will repeatedly call a function with the result of the previous call to the function in order to build a list:
+</p>
+<pre class="example">
+repeat f a = cons a (repeat f (f a))
+</pre>
+
+<p>
+Then we can build our list of square root approximations:
+</p>
+<pre class="example">
+repeat (next N) a0
+</pre>
+<p>
+Our list is an example of an infinite list. It can potentially create output forever. But because of lazy evaluation, approximations will only be computed as needed.
+</p>
+
+<p>
+The last part we need is the function <i>within</i>, which is an example of a <i>selector</i>. The selector is a function which will iterate through the infinite list until subsequent approximations are within the tolerance.
+</p>
+<pre class="example">
+within tol (cons a (cons b rest)) = b if abs(a - b) &lt;= tol
+                                  = within tol (cons b rest) otherwise
+</pre>
+<p>
+Now we can glue these 3 functions into a new function which approximates the square root of a number.
+</p>
+<pre class="example">
+sqrt a0 tol N = within eps (repeat (next N) a0)
+</pre>
+<p>
+It's clear how much more modular this is than the original solution. We've broke it down into 3 sub-problems: a function that creates an approximation (next), a function that repeatedly calls it (repeat), and a function that tests for the termination condition (within) and glued them together to solve a specific problem. We can leverage those functions in many other solutions outside of approximating square roots.
+</p>
+</div>
+</div>
+<div id="outline-container-sec-4-2-2" class="outline-4">
+<h4 id="sec-4-2-2">Example: Game Trees</h4>
+<div class="outline-text-4" id="text-4-2-2">
+<p>
+In artificial intelligence there's an algorithm that estimates how good of a position a game player is in, called the <i>alpha-beta heuristic</i>. It looks ahead to see how the game might develop, but avoids looking ahead on moves that are not beneficial.
+To implement the alpha-beta heuristic we can use a game tree to represent the state of a game. 
+</p>
+
+<p>
+The tree contains the current game state at the root, and its childen are the possible moves from the current state to another state.
+</p>
+
+<p>
+Lazy evaluation is important here because sometimes game trees are infinite in size or too big to hold in memory.
+</p>
+
+<p>
+Lazy evaluation allows you to evaluate portions of the tree at a time, and when those portions have been evaluated, they are garbage collected. Only the portion being evaluated needs to be in memory at a given time which makes it possible to operate on huge, or even infinite trees.
+</p>
+
+<p>
+The implementation of the alpha-beta heuristic plays out similar to the square root algorithm, so refer to the paper for the details. What's interesting though, is that the paper goes through several iterations of optimization on the algorithm which are great examples of the type of modularization made possible by higher order functions and lazy evaluation.
+</p>
+</div>
+</div>
+<div id="outline-container-sec-4-2-3" class="outline-4">
+<h4 id="sec-4-2-3">Additional Examples</h4>
+<div class="outline-text-4" id="text-4-2-3">
+<p>
+The paper also walk through a couple of more examples, including numerical differentiation through approximation and numerical integration through approximation.
+</p>
+</div>
+</div>
+</div>
+</div>
+<div id="outline-container-sec-5" class="outline-2">
+<h2 id="sec-5">What is functional Programming? (revisited)</h2>
+<div class="outline-text-2" id="text-5">
+<p>
+A better way to describe functional programming, which also provides something for the programmer to strive for, is the unique forms of modularization that it provides. 
+Higher order functions and lazy evaluation both provide very powerful forms of modularization that allows a problem to be divided into it's sub-problems and glued back together. 
+These solutions are often more reusable for other pieces of code than the solutions you would get through traditional programming languages. In this paper you've seen several of them, such as <i>reduce</i>, <i>map</i>, <i>retree</i>, <i>maptree</i>, <i>repeat</i>, and <i>within</i>.
+</p>
+
+<p>
+If you look back at the examples, you can see that our earlier definition still holds true as well. They contain no assignment, are referentially transparent, and they have no side effects.
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-6" class="outline-2">
+<h2 id="sec-6">Conclusion (my thoughts)</h2>
+<div class="outline-text-2" id="text-6">
+<p>
+After reading through this paper, here's my attempt to put words in Hughes' mouth and imagine how he would define functional programming (this is <i>not</i> from the paper): 
+</p>
+
+<p>
+<i>Functional programming is a style which allows one to solve problems by breaking them up into functions that solve it's subproblems, and gluing those functions together to solve the original problem. Functional programming provides two important types of glue: higher order functions and lazy evaluation. These help modularize your solutions into decoupled components that can be reused in many other problems. In a way not possible in traditional languages.</i>
+</p>
+
+<p>
+But what are traditional languages? Object oriented languages today are adopting more and more features from functional languages. If higher order functions and lazy evaluation are the only requirements, C# should be considered a functional language. But if you use the negative definition, C# allows assignment and the mutation of state so therefore it isn't functional. Even some languages considered to be functional such as Lisp also allow mutation.
+</p>
+
+<p>
+Maybe the line between functional and traditional languages has blurred a little bit, but it's clear that higher order functions and lazy evaluation are very powerful, and as Hughes argues in his paper, they still matter.
+</p>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<p class="author">Author: Caleb Gossler</p><p class="date">Last Modified: 2016-06-03 Fri 22:13</p>
+</div>
+</body>
+</html>
