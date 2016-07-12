@@ -1,0 +1,311 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<title>Using NixOS (As Your Main Desktop OS)</title>
+<!-- 2016-07-11 Mon 22:50 -->
+<meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta  name="generator" content="Org-mode" />
+<meta  name="author" content="Caleb Gossler" />
+<meta  name="description" content="NixOS has quickly become my favorite Linux distribution. These are my thoughts after using it daily as my main operating system over the past several months."
+ />
+<link rel="stylesheet" type="text/css" href="/assets/style.css">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script type="text/javascript">
+/*
+@licstart  The following is the entire license notice for the
+JavaScript code in this tag.
+
+Copyright (C) 2012-2013 Free Software Foundation, Inc.
+
+The JavaScript code in this tag is free software: you can
+redistribute it and/or modify it under the terms of the GNU
+General Public License (GNU GPL) as published by the Free Software
+Foundation, either version 3 of the License, or (at your option)
+any later version.  The code is distributed WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU GPL for more details.
+
+As additional permission under GNU GPL version 3 section 7, you
+may distribute non-source (e.g., minimized or compacted) forms of
+that code without the copy of the GNU GPL normally required by
+section 4, provided you include this license notice and a URL
+through which recipients can access the Corresponding Source.
+
+
+@licend  The above is the entire license notice
+for the JavaScript code in this tag.
+*/
+<!--/*--><![CDATA[/*><!--*/
+ function CodeHighlightOn(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(null != target) {
+     elem.cacheClassElem = elem.className;
+     elem.cacheClassTarget = target.className;
+     target.className = "code-highlighted";
+     elem.className   = "code-highlighted";
+   }
+ }
+ function CodeHighlightOff(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(elem.cacheClassElem)
+     elem.className = elem.cacheClassElem;
+   if(elem.cacheClassTarget)
+     target.className = elem.cacheClassTarget;
+ }
+/*]]>*///-->
+</script>
+</head>
+<body>
+<div id="content">
+<h1 class="title">Using NixOS (As Your Main Desktop OS)</h1>
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#sec-1">Introduction to NixOS</a>
+<ul>
+<li><a href="#sec-1-1">Immutability in your operating system</a></li>
+<li><a href="#sec-1-2">Nix Package Manager</a></li>
+<li><a href="#sec-1-3">Profiles</a></li>
+</ul>
+</li>
+<li><a href="#sec-2">Thinking in NixOS</a></li>
+<li><a href="#sec-3">My Experience</a>
+<ul>
+<li><a href="#sec-3-1">The Good</a></li>
+<li><a href="#sec-3-2">The Not-quite-as-good</a></li>
+</ul>
+</li>
+<li><a href="#sec-4">Conclusion</a></li>
+</ul>
+</div>
+</div>
+<p>
+NixOS is a Linux distribution that brings a functional approach to the operating system. 
+It borrows a few ideas from functional programming: immutability, referential transparency, and declarative style, and applies them to system configuration and management of your OS.
+</p>
+
+<p>
+And as it turns out, it works really well! I've been using it as my every-day operating system for the past 3 months, and it convinced me to go back to Linux after switching to OS X almost 10 years ago.
+</p>
+
+<p>
+In this post I will give a quick introduction to NixOS and how it works, and also discuss my experience using it (the good and the bad).
+</p>
+
+<p>
+Feel free to use the table of contents to skip around if you're not interested in a particular section.
+</p>
+
+<div id="outline-container-sec-1" class="outline-2">
+<h2 id="sec-1">Introduction to NixOS</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+NixOS is described as a "Fully Functional Linux Distribution." It uses a <i>declarative</i> language for specifying the system's packages and configuration. In addition, software packages, configuration files, start-up scripts, etc., are <i>immutable</i>. Once they are built, they are never changed.
+</p>
+</div>
+
+<div id="outline-container-sec-1-1" class="outline-3">
+<h3 id="sec-1-1">Immutability in your operating system</h3>
+<div class="outline-text-3" id="text-1-1">
+<p>
+<i>Imperative</i> programs are coded in a stateful way. You type instructions that explicitly mutate the state of your system in the course of the running program. 
+</p>
+
+<p>
+You can also think of typical operating systems as being <i>imperative</i>. For example, in most Linux distributions, upgrading a software package overwrites the files of the previous version on your system. You can think of the packages on these operating systems similar to <i>mutable state</i> in a program. They can change over time.
+</p>
+
+<p>
+System configuration in Linux is also typically very imperative. Take the entire /etc directory for example. configuration files such as sshd_config are changed and overwritten destructively.
+</p>
+
+<p>
+This mutability in your OS can cause lots of pain. There is no trace of the previous configuration and files, and the changes can ripple through your system in unexpected ways. You may have heard of <i>DLL hell</i>.
+</p>
+
+<p>
+These are problems that NixOS attempts to fix. Packages installed through <i>Nix</i>, which is NixOS's package manager, are <b>immutable</b>. Once they are installed, they will never change. 
+</p>
+
+<p>
+The Nix package manager is also available for Linux, Mac OS X, and Windows. But NixOS takes it a step further and leverages Nix to build not just software packages, but the <i>entire system</i>. It builds the software packages, system configuration files, start-up scripts, even the kernel.
+</p>
+
+<p>
+You can have the peace of mind knowing that as you upgrade packages in your system they won't unknowingly break other components. In fact, the multiple versions of the package live side-by-side in your system in complete isolation. To take a look at how this works, lets dive into the Nix Package Manager.
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-1-2" class="outline-3">
+<h3 id="sec-1-2">Nix Package Manager</h3>
+<div class="outline-text-3" id="text-1-2">
+<p>
+Nix packages are built by writing a function called a <i>nix expression</i>. These functions also take a cue from functional programming languages and are <i>referentially transparent</i>. Their output depends only on their function arguments.
+</p>
+
+<p>
+The function arguments in a nix expression take the form of source code, environment variables, and other nix expressions. If the same nix expression is evaluated with different arguments, the output will change. With nix, different output means the resulting files will be placed in a unique sub directory.
+</p>
+
+<p>
+So for example if you install two versions of Ruby through Nix, the nix expression will be evaluated with the source code of the version you are installing. Because the source code of the two versions are different, the the nix expression will have two outputs and they will both placed alongside each other in the file system in different directories.
+</p>
+
+<p>
+If you have multiple instances of Ruby installed on your system, NixOS will know which one to run based on the current <i>profile</i>.
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-1-3" class="outline-3">
+<h3 id="sec-1-3">Profiles</h3>
+<div class="outline-text-3" id="text-1-3">
+<p>
+A nix profile is the current user environment. It is a directory that contains a collection of symbolic links to the active packages for the user. The profile is added to the search path.
+</p>
+
+<p>
+In a typical Linux system, Ruby might be installed in a location such as /usr/bin/ruby. With NixOS, The active ruby will be available at &lt;profile location&gt;/bin/ruby. This will be a symlink pointing to the location of the active profile's Ruby binary.
+</p>
+
+<p>
+This means you can have multiple profiles, each pointed to a different version of ruby on the same system, which is <i>very</i> nice when setting up development environments (which I will get to shortly).
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-2" class="outline-2">
+<h2 id="sec-2">Thinking in NixOS</h2>
+<div class="outline-text-2" id="text-2">
+<p>
+Using NixOS changes the way you think about and use your operating system, and just like learning how to program in a different paradigm, it takes time and practice to be effective.
+</p>
+
+<p>
+After a couple of months using it, I've come to think of NixOS as not only an operating system but a dependency manager for your entire system.
+</p>
+
+<p>
+One of my first 'aha' moments with NixOS was trying to install <a href="https://github.com/roswell/roswell">Roswell</a>, a tool similar to Ruby Version Manager, Node Version Manager, etc., but for Common Lisp. These tools offer an easy way to install and manage different versions and implementations of language interpreters and also various library packages you might install as dependencies for your software project.
+</p>
+
+<p>
+There is no Roswell package available in nixpkgs (the Nix package repository), so I jumped into #NixOS on irc for help writing my first nix expression in order to build Roswell and install it on my laptop. Eventually someone asked me why I would need Roswell when any common lisp implementation I would need is already in nixpkgs.
+</p>
+
+<p>
+And I came to realize that tools like Roswell, NVM, and RVM exist to give you an easy way to create isolated environments within a <i>mutable</i> operating system.
+</p>
+
+<p>
+What else gives you isolated environments by default? NixOS!
+</p>
+
+<p>
+With NixOS you can install any number of versions of the same package on your system, all of them stored in a unique directory in your file system. As mentioned above, only one of them is active at a time based on the active profile. It's simple to switch back and forth between profiles.
+</p>
+
+<p>
+And it gets even easier to manage environments with nix-shell. Nix-shell is a command that builds the dependencies of a derivation and then starts a shell with all the dependencies in the shell's path. This means you can have a nix expression which work very much like a vagrantfile or dockerfile which builds an isolated development environment with all of the dependencies needed. All for much cheaper (and much simpler) since there is no virtualization or containers (or their tooling) involved.
+</p>
+
+<p>
+If I need a development environment with Node.js version 4 and Redis, I can have a default.nix file on the top level of my repository that looks like:
+</p>
+
+<pre class="example">
+with import &lt;nixpkgs&gt; {}; {
+   nodeEnv = stdenv.mkDerivation {
+     name = "node";
+     buildInputs = [ nodejs-4_x redis ];
+   };
+ }
+</pre>
+
+<p>
+After running nix-shell in the directory where default.nix is located, I'll be dropped in a shell with both Node.js and Redis available. But they won't be available outside of that environment and won't be polluting my user environment (and maybe just as importantly, you user environment doesn't pollute your development/build environment).
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-3" class="outline-2">
+<h2 id="sec-3">My Experience</h2>
+<div class="outline-text-2" id="text-3">
+</div><div id="outline-container-sec-3-1" class="outline-3">
+<h3 id="sec-3-1">The Good</h3>
+<div class="outline-text-3" id="text-3-1">
+<ul class="org-ul">
+<li>Development environments. I'm so happy I can get the same level of isolation without wasting the CPU and memory I spent my hard earned money on to spin up virtual machines and containers.
+</li>
+<li>Isolated build environments. Derivations are built in a completely isolated environment so nothing on your system can leak in.
+</li>
+<li>Since packages are created and built with a nix expression, it's really easy to take a look at the code and see all of the available options.
+</li>
+<li>Everyone on IRC is very helpful if you have questions.
+</li>
+<li>Did I mention the development environments?
+</li>
+<li>Because your entire system is declared in the configuration.nix configuration file, you can wipe your laptop and do a fresh install anytime if for some reason you want to (I did this when I wanted to change my file system to btrfs).
+</li>
+<li>It's dead simple to try out different desktop environments, window managers, or anything else, really. If you don't like it, roll back to a previous configuration with a simple command and it's like it was never there.
+</li>
+<li>Works flawlessly on my Thinkpad X1 Carbon (2016) laptop.
+</li>
+</ul>
+</div>
+</div>
+<div id="outline-container-sec-3-2" class="outline-3">
+<h3 id="sec-3-2">The Not-quite-as-good</h3>
+<div class="outline-text-3" id="text-3-2">
+<p>
+I have some lingering questions that I haven't answered yet. Hopefully I will find good answers to them with time.
+</p>
+<ul class="org-ul">
+<li>So many programming languages have their own package management tool, like npm, gem, etc.. I'm not sure how they should fit into NixOS. I see there's <a href="https://github.com/NixOS/npm2nix">some tools</a> to generate nix expressions to build npm packages. But will this always be a fight between NixOS and language package managers over who will manage dependencies? (I hope NixOS wins, to be honest.)
+</li>
+<li>How should I manage my Emacs packages? There's actually a pretty <a href="https://github.com/NixOS/nixpkgs/blob/master/pkgs/top-level/emacs-packages.nix">impressive list</a> of Emacs packages in nixpkgs that I will probably end up using.
+</li>
+<li>Changes to configuration.nix are still destructive. This isn't actually a big deal if you put it in version control somewhere, which I should probably do.
+</li>
+<li>The installation is not the easiest. It's probably just a matter of time before it gets some nice tooling in front of it, but for now you should definitely have another computer/tablet/phone available to keep the documentation open as you make your way through it.
+<ul class="org-ul">
+<li>Disk partitioning needs to be done manually at this point. If you need LVM, LUKS, or anything special when it comes to your disk partitioning, you'll need to do it yourself.
+</li>
+</ul>
+</li>
+<li>Although I don't think I've ever had a problem, there aren't as many packages in nixpkgs as there are in some other distro's package repositories.
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div id="outline-container-sec-4" class="outline-2">
+<h2 id="sec-4">Conclusion</h2>
+<div class="outline-text-2" id="text-4">
+<p>
+After taking some time to learn and use NixOS, I don't think I can go back to Mac OS X or any other typical Linux distro (and if I ever need to, I will use Nix as my package manager).
+The immutable, declarative approach to system configuration makes it dead simple to configure your system.  Need LVM over LUKS on sda4 and setup initrd to decrypt the partition? Just add `boot.initrd.luks.devices = [ { name = "luksroot"; device = "/dev/sda4"; } ];` to your configuration.nix file.
+</p>
+
+<p>
+Although I've spent most of my time evaluating NixOS as a desktop OS, it's also exciting to see how tools like <a href="http://sandervanderburg.blogspot.com/2015/03/on-nixops-disnix-service-deployment-and.html">NixOps and Disnix</a> can take system configurations and deploy entire clusters to the cloud.
+</p>
+
+<p>
+I haven't been this happy with my operating system of choice for a long time. But <a href="https://en.wikipedia.org/wiki/Guix_System_Distribution">GuixSD</a> sounds interesting, so I might have to give that a try next.
+</p>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<p class="author">Author: Caleb Gossler</p><p class="date">Last Modified: 2016-07-11 Mon 22:49</p>
+</div>
+</body>
+</html>
