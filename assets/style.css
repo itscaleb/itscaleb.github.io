@@ -2,10 +2,6 @@ body {
     padding: 1em 2em 1em 2em;
 }
 
-h1.title {
-    text-align: right;
-}
-
 h2 a {
     text-decoration: none;
 }

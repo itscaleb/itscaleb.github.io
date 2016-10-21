@@ -1,0 +1,410 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<title>Time, Clocks, and the Ordering of Events in a Distributed System</title>
+<!-- 2016-10-21 Fri 13:14 -->
+<meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta  name="generator" content="Org-mode" />
+<meta  name="author" content="Caleb Gossler" />
+<link rel="stylesheet" type="text/css" href="/assets/style.css">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+ga('create', 'UA-44954881-3', 'auto');
+ga('send', 'pageview');
+</script>
+<script type="text/javascript">
+/*
+@licstart  The following is the entire license notice for the
+JavaScript code in this tag.
+
+Copyright (C) 2012-2013 Free Software Foundation, Inc.
+
+The JavaScript code in this tag is free software: you can
+redistribute it and/or modify it under the terms of the GNU
+General Public License (GNU GPL) as published by the Free Software
+Foundation, either version 3 of the License, or (at your option)
+any later version.  The code is distributed WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU GPL for more details.
+
+As additional permission under GNU GPL version 3 section 7, you
+may distribute non-source (e.g., minimized or compacted) forms of
+that code without the copy of the GNU GPL normally required by
+section 4, provided you include this license notice and a URL
+through which recipients can access the Corresponding Source.
+
+
+@licend  The above is the entire license notice
+for the JavaScript code in this tag.
+*/
+<!--/*--><![CDATA[/*><!--*/
+ function CodeHighlightOn(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(null != target) {
+     elem.cacheClassElem = elem.className;
+     elem.cacheClassTarget = target.className;
+     target.className = "code-highlighted";
+     elem.className   = "code-highlighted";
+   }
+ }
+ function CodeHighlightOff(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(elem.cacheClassElem)
+     elem.className = elem.cacheClassElem;
+   if(elem.cacheClassTarget)
+     target.className = elem.cacheClassTarget;
+ }
+/*]]>*///-->
+</script>
+</head>
+<body>
+<div id="content">
+<h1 class="title">Time, Clocks, and the Ordering of Events in a Distributed System</h1>
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#sec-1">Introduction</a></li>
+<li><a href="#sec-2">Our Distributed System</a></li>
+<li><a href="#sec-3">Partial Ordering</a></li>
+<li><a href="#sec-4">Logical Clocks</a></li>
+<li><a href="#sec-5">Ordering the Events Totally</a></li>
+<li><a href="#sec-6">Example: Synchronizing Access to a Shared Resource in a Distributed System</a></li>
+<li><a href="#sec-7">Anomalous behavior</a></li>
+<li><a href="#sec-8">Example: Synchronizing Physical Clocks</a></li>
+<li><a href="#sec-9">My Thoughts</a></li>
+</ul>
+</div>
+</div>
+<div id="outline-container-sec-1" class="outline-2">
+<h2 id="sec-1">Introduction</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+<i>Time, Clocks, and the Ordering of Events in a Distributed System</i> (<a href="http://research.microsoft.com/en-us/um/people/lamport/pubs/time-clocks.pdf">link to paper</a>) is a paper written by Leslie Lamport, and covers some of the core challenges that we are faced with when building a distributed system. And as the title suggests, the challenges are around the concept of time, clocks, and when events within your system occur relative to each other.
+</p>
+
+<p>
+People tend to think about events in the real world as things that happened at a particular instant. You can reflect back on your day and create a timeline that shows all the events in order that happened throughout the day.
+</p>
+
+<p>
+This approach will get you into trouble as you design a distributed system. To understand why, we should first look at how a distributed system is defined:
+</p>
+
+<p>
+"<i>A distributed system is a collection of processes which communicate by exchanging messages, in which the time it takes to transmit a message is not negligible compared to the time between events in a single process.</i>"
+</p>
+
+<p>
+If you rely solely on physical time, it would be impossible for processes to know in which order events truly happened. Physical clocks become out of sync, and the times that events occurr at become distorted by message transmission times. Messages might arrived delayed or out of order.
+</p>
+
+<p>
+The only thing that can be agreed upon are events that directly follow each other on a single process. We can also agree that the sending of a message occurs before the receipt of a message. But this only gives us a partial view into the ordering of events that occur.
+</p>
+
+<p>
+To build a distributed system, we have to devise a way to take this partial ordering of events, and extend it to a <i>consistent</i> total order of events that the system can agree upon. Having the consistent total order of all events across all processes is the key to building a distributed system.
+</p>
+</div>
+</div>
+<div id="outline-container-sec-2" class="outline-2">
+<h2 id="sec-2">Our Distributed System</h2>
+<div class="outline-text-2" id="text-2">
+<p>
+Before we move on to how we can build a consistent total order, lets define what our distributed system is:
+</p>
+<ul class="org-ul">
+<li>it is composed of a collection of <i>processes</i>
+</li>
+<li>Each process consists of a sequence of events.
+</li>
+<li>The events <i>of a process</i> form a sequence where event <i>a</i> occurs before event <i>b</i> in the sequence if a happens before b.
+</li>
+<li>Sending or receiving a message is an event in a process.
+</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-sec-3" class="outline-2">
+<h2 id="sec-3">Partial Ordering</h2>
+<div class="outline-text-2" id="text-3">
+<p>
+Next we need a way of saying that an event <i>a</i> happened before event <i>b</i>. But we must be able to do so without a physical clock.
+</p>
+
+<p>
+This is easy for a single process. It knows of each event that occurred within itself, and in what order (note the use of the word <i>order</i>, and not <i>time</i>) the events occurred in respect to each other. <i>note: we could say that each process has a total ordering of the events that occurred within itself</i>
+</p>
+
+<p>
+It gets trickier when talking about the order of events across processes, but this is what we can say so far:
+</p>
+<ol class="org-ol">
+<li>If <i>a</i> and <i>b</i> are events in the same process, and <i>a</i> comes before <i>b</i> in the processes' order of events, then <i>a</i> <i>happened before</i> <i>b</i>.
+<ul class="org-ul">
+<li><i>From now on we will denote "happened before" with the symbol "-&gt;".</i>
+</li>
+</ul>
+</li>
+<li>If <i>a</i> is the sending of a message by one process, and <i>b</i> is the receipt of the same message by another process, than <i>a</i> -&gt; <i>b</i>.
+</li>
+<li>If a -&gt; b and b -&gt; c, then a -&gt; c. Also, two distinct events <i>a</i> and <i>b</i> are concurrent if <i>a</i> doesn't "happen before" <i>b</i>, and <i>b</i> doesn't "happen before" <i>a</i>.
+</li>
+</ol>
+
+<p>
+These statements imply that "-&gt;" is a partial ordering on all of all events on the system. We still can't say in what order <i>all</i> events across the system occurred, but through these statements, we can order some of the events.
+</p>
+
+<p>
+So to recap, the <i>partial ordering</i> is the ordering of events that have the <i>happened before</i> relationship. But the <i>happened before</i> relationship is constrained to events that happened within a single process, and the sending and receipt of a message between two processes. If we have many processes with events, not all of them will have this <i>happened before</i> relationship. How can we take these unrelated events and decide in what order they occurred?
+</p>
+</div>
+</div>
+<div id="outline-container-sec-4" class="outline-2">
+<h2 id="sec-4">Logical Clocks</h2>
+<div class="outline-text-2" id="text-4">
+<p>
+The next step to find a total ordering of all events, is to introduce clocks.
+</p>
+
+<p>
+So we now introduce clocks into the system. <i>But they are not related to physical time</i>. They simply assign a number to an event, and can be implemented as a counter with no timing mechanism. For example If a process has two events that occurred within itself, the clock time assigned to event <i>a</i> could be 1, and the clock time to event <i>b</i> could be assigned 2 if <i>a</i> -&gt; <i>b</i>.
+</p>
+
+<p>
+And that is what we'll define as the <i>clock condition</i>: for two events, <i>a</i> and <i>b</i>, the clock time assigned to <i>a</i> is less than the clock time assigned to <i>b</i>, if <i>a</i> -&gt; <i>b</i>.
+</p>
+
+<p>
+Based on what we said <i>above</i>, The following two conditions must hold for the clock condition to be satisfied:
+</p>
+<ol class="org-ol">
+<li>If <i>a</i> and <i>b</i> are events on process <i>P<sub>i</sub></i>, and <i>a</i> -&gt; <i>b</i>, then C<sub>i</sub>(a) &lt; C<sub>i</sub>(b). <i>note: C<sub>i</sub> denotes P<sub>i's</sub> clock, and C<sub>i</sub>(e) is the clock time assigned to event e</i>
+</li>
+<li>If <i>a</i> is the sending of a message by Process <i>P<sub>i</sub></i>, and <i>b</i> is the receipt of that message by process <i>P<sub>j</sub></i>, then C<sub>i</sub>(a) &lt; C<sub>j</sub>(b).
+</li>
+</ol>
+
+<p>
+Then all we have to do to implement those two conditions is:
+</p>
+<ul class="org-ul">
+<li>Each process P<sub>i</sub> increments C<sub>i</sub> between any two successive events.
+</li>
+<li>(a) If an event <i>a</i> is the sending of a message <i>m</i> by process P<sub>i</sub>, then the message <i>m</i> contains a timestamp <i>T<sub>m</sub></i> = C<sub>i</sub>(a).
+
+<p>
+(b) Upon receiving a message <i>m</i>, process P<sub>j</sub> must set C<sub>j</sub> greater than or equal to its present value and greater than T<sub>m</sub>.
+</p>
+</li>
+</ul>
+
+<p>
+Notice that in the implementation, (a) lets other processes know at what logical time the event took place, and (b) is needed to ensure that the sending of the message takes place before the receipt of the message in the system's logical time.
+</p>
+</div>
+</div>
+<div id="outline-container-sec-5" class="outline-2">
+<h2 id="sec-5">Ordering the Events Totally</h2>
+<div class="outline-text-2" id="text-5">
+<p>
+Now that we have a system of logical clocks that satisfy the <i>clock condition</i>, we just need to extend it a little bit to have a total order of events.
+</p>
+
+<p>
+First we decide how to break ties if two events from different processes are assigned the same logical clock time: we simply set an arbitrary priority to the processes. Event <i>a</i> on <i>P<sub>i</sub></i> which takes place at time 1 occurs before event <i>b</i> on <i>P<sub>j</sub></i> at time 1 because we say so. We just need to keep this tie-breaking priority order consistent throughout the system.
+</p>
+
+<p>
+Now we can define the "happened before" partial ordering in terms of a total ordering (which we denote as "=&gt;"):
+</p>
+
+<p>
+If <i>a</i> is an event in process <i>P<sub>i</sub></i>, and <i>b</i> is an event in process <i>P<sub>j</sub></i>, then <i>a</i> =&gt; <i>b</i> <i>if and only if either</i>:
+</p>
+<ul class="org-ul">
+<li>C<sub>i</sub>(a) &lt; C<sub>j</sub>(b)
+</li>
+<li>C<sub>i</sub>(a) = C<sub>j</sub>(b), and we've decided that <i>P<sub>i</sub></i> beats <i>P<sub>j</sub></i> on ties.
+</li>
+</ul>
+
+<p>
+We can see that a -&gt; b implies a =&gt; b.
+</p>
+
+<p>
+With this method, we can now take <i>all of the events</i> that occurred across <i>every process</i>, and say in what order they occurred. This is the <i>total order</i> of events.
+</p>
+
+<p>
+The partial ordering of events in the system are unique. The total ordering is not unique. Different clocks satisfying the clock condition yield different total orderings. The important thing is that the processes end up with the same total order.
+</p>
+
+<p>
+Now that we have devised a way to have a consistent total order of all of the events in the system, we can build a distributed system. Let's take a look at an example that shows why the total order makes it possible to do so.
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-6" class="outline-2">
+<h2 id="sec-6">Example: Synchronizing Access to a Shared Resource in a Distributed System</h2>
+<div class="outline-text-2" id="text-6">
+<p>
+We can use the total order to implement the mutual exclusion problem of synchronizing access to a shared resource.
+</p>
+
+<p>
+Let's say we have a system that consists of a fixed set of processes and one shared resource. We want to make sure that only one process has access to the shared resource so that there are no conflicts. The algorithm does 3 things:
+</p>
+<ol class="org-ol">
+<li>A process that has access to the resource must release it before access is given to another process.
+</li>
+<li>Different requests for access to the resource is given in the order the requests are made
+</li>
+<li>If every process which requests access to the resource releases it, then all requests are eventually granted.
+</li>
+</ol>
+
+<p>
+If we use the logical clocks from above, we can have a total ordering of all request and release operations. We just have to make sure each process learns of every other processes' operations.
+</p>
+
+<p>
+Each process maintains its own <i>request queue</i> which is never seen by other processes. The request queue keeps all the requests sorted in total order. 
+</p>
+
+<p>
+The algorithm then has 5 rules:
+</p>
+<ol class="org-ol">
+<li>To request a resource, a process P<sub>i</sub> sends a message "T<sub>m</sub>: P<sub>i</sub> requests resource" to every other process, and then puts the message on its own request queue. <i>Note: T<sub>m</sub> is the logical timestamp of the message.</i>
+</li>
+<li>When process P<sub>j</sub> receives the message "T<sub>m</sub>: P<sub>i</sub> requests resource", it puts it on its request queue and sends an acknowledgment message to P<sub>i</sub>.
+</li>
+<li>To release the resource, P<sub>i</sub> removes any "T<sub>m</sub>: P<sub>i</sub> requests resource" message from its queue and sends the message "T<sub>m</sub>: P<sub>i</sub> releases resource" to all the other processes.
+</li>
+<li>When P<sub>j</sub> receives "T<sub>m</sub>: P<sub>i</sub> releases resource" it removes any "T<sub>m</sub>: P<sub>i</sub> requests resource" message from its request queue.
+</li>
+<li>P<sub>i</sub> is granted access to the resource when (i) there is a T<sub>m</sub>: P<sub>i</sub> requests resource" at the front of the queue (which is in total order), and (ii) P<sub>i</sub> has received a message later than T<sub>m</sub> from every other process.
+</li>
+</ol>
+
+<p>
+This guarantees that the same (total ordered) request queue is synchronized across all processes.
+</p>
+
+<p>
+Each process in the system can be thought of as a state machine processing a series of commands that transition the state machine to its next state. The series of commands is the request queue. 
+</p>
+
+<p>
+Each processes will end up in a consistent state because each one processes the events in the total order.
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-7" class="outline-2">
+<h2 id="sec-7">Anomalous behavior</h2>
+<div class="outline-text-2" id="text-7">
+<p>
+We've come along way, but the system of clocks described so far has a problem if users are using it in the real world in real time. One user might take some action <i>a</i>. That user then might call up user <i>b</i> on the phone, and tell them to take some action <i>b</i> after action <i>a</i>. But the system might not know that a -&gt; b unless the two processes have already communicated by sending a message.
+</p>
+
+<p>
+This anomalous behavior can happen because there is no physical clock in the system. The logical clock has no way of knowing that <i>a</i> physically happened before <i>b</i> unless the two processes in which those events occurred happened to have sent messages to each other. To put it another way, the ordering of the logical clock differs from that perceived by the user.
+</p>
+
+<p>
+There are a couple of ways this can be fixed. One is to have the users include timestamp information to give the system information about the time the event occurred which will give it the necessary information to calculate a correct total ordering. This might put an unwanted burden on the users of the system.
+</p>
+
+<p>
+Another way to avoid this behavior is to introduce physical clocks into the system.
+</p>
+
+<p>
+We will go this route. Let's take a look at another example, this time synchronizing physical clocks in a distributed system.
+</p>
+</div>
+</div>
+<div id="outline-container-sec-8" class="outline-2">
+<h2 id="sec-8">Example: Synchronizing Physical Clocks</h2>
+<div class="outline-text-2" id="text-8">
+<p>
+This approach is similar to the previous example where we synchronized mutual exclusion to a shared resource across different processes, but this time we will synchronize a physical clock across processes.
+</p>
+
+<p>
+When we talk about physical time, we imagine that time is continuous. We can take that view with our clocks too, rather than imagining clocks have discrete clicks.
+</p>
+
+<p>
+Two clocks will never run at the same rate, and will slowly drift apart. The algorithm must ensure they don't drift further than an acceptable margin.
+</p>
+
+<p>
+In addition to the clocks running at approximately the same rate, the algorithm must ensure that they also are synchronized to the same time within an acceptable margin of error.
+</p>
+
+<p>
+We can introduce physical time to our distributed system by the following algorithm, which extends the implementation rules for the clock condition.
+</p>
+
+<ol class="org-ol">
+<li>within a single process, the clock is continuous. It is changing at a constant rate.
+</li>
+<li>a. If process P<sub>i</sub> sends a message <i>m</i> at physical time <i>t</i>, the message has a timestamp T<sub>m</sub> = C<sub>i</sub>(t).
+b. Upon receiving a message at time t', process P<sub>j</sub> sets it's clock C<sub>j</sub> to the maximum of either C<sub>j</sub>(t') or T<sub>m</sub> plus the shortest message transmission time.
+</li>
+</ol>
+
+<p>
+<i>Note: deciding on the shortest transmission can be fairly complicated. Check the paper for more details</i>
+</p>
+
+<p>
+With this algorithm, each process only needs to know the reading of its own clock, and the timestamps of messages it receives in order to maintain the physical time.
+</p>
+
+<p>
+This is also known as the <i>strong clock condition</i>, which is stronger than the clock condition because it takes physical clocks into account as well as the logical clocks.
+</p>
+</div>
+</div>
+<div id="outline-container-sec-9" class="outline-2">
+<h2 id="sec-9">My Thoughts</h2>
+<div class="outline-text-2" id="text-9">
+<p>
+Things I found interesting about this paper:
+</p>
+
+<ul class="org-ul">
+<li>This distributed system works by each process communicating to the other processes of events that occurred. As mentioned above, each process then becomes a state machine that processes each event, which leads to a new state. Because each process has each event in total order, they all end up in the same state after processing each event.
+
+<p>
+It seems like many systems built today become very brittle because processes in the system are isolated. They do not communicate events that occur within the process. This can create complexity when these isolated processes start to rely on each other and need to orchestrate the sharing of each processes' state among each other.
+</p>
+</li>
+<li>In the algorithm described in the paper, each process follows the algorithm independently without any central synchronization process or central storage. They are truly distributed algorithms.
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<p class="author">Author: Caleb Gossler</p><p class="date">Last Modified: 2016-10-21 Fri 11:43</p>
+</div>
+</body>
+</html>
