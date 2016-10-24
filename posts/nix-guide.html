@@ -1,0 +1,448 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<title>My Guide to Nix</title>
+<!-- 2016-10-24 Mon 12:19 -->
+<meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta  name="generator" content="Org-mode" />
+<meta  name="author" content="Caleb Gossler" />
+<meta  name="description" content="This is my /Nix Guide./ Yes, it's a very generic name. Mostly because I'm not completely sure what it will end up as. For now, it's just a place where I'll keep posting as I learn more about the Nix ecosystem. So you can expect the organization and content of this page to change."
+ />
+<link rel="stylesheet" type="text/css" href="/assets/style.css">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+ga('create', 'UA-44954881-3', 'auto');
+ga('send', 'pageview');
+</script>
+<script type="text/javascript">
+/*
+@licstart  The following is the entire license notice for the
+JavaScript code in this tag.
+
+Copyright (C) 2012-2013 Free Software Foundation, Inc.
+
+The JavaScript code in this tag is free software: you can
+redistribute it and/or modify it under the terms of the GNU
+General Public License (GNU GPL) as published by the Free Software
+Foundation, either version 3 of the License, or (at your option)
+any later version.  The code is distributed WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU GPL for more details.
+
+As additional permission under GNU GPL version 3 section 7, you
+may distribute non-source (e.g., minimized or compacted) forms of
+that code without the copy of the GNU GPL normally required by
+section 4, provided you include this license notice and a URL
+through which recipients can access the Corresponding Source.
+
+
+@licend  The above is the entire license notice
+for the JavaScript code in this tag.
+*/
+<!--/*--><![CDATA[/*><!--*/
+ function CodeHighlightOn(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(null != target) {
+     elem.cacheClassElem = elem.className;
+     elem.cacheClassTarget = target.className;
+     target.className = "code-highlighted";
+     elem.className   = "code-highlighted";
+   }
+ }
+ function CodeHighlightOff(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(elem.cacheClassElem)
+     elem.className = elem.cacheClassElem;
+   if(elem.cacheClassTarget)
+     target.className = elem.cacheClassTarget;
+ }
+/*]]>*///-->
+</script>
+</head>
+<body>
+<div id="content">
+<h1 class="title">My Guide to Nix</h1>
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#sec-1">Introduction</a></li>
+<li><a href="#sec-2">Changelog</a></li>
+<li><a href="#sec-3">The Tools</a>
+<ul>
+<li><a href="#sec-3-1">nix-env</a>
+<ul>
+<li><a href="#sec-3-1-1">Nix Environments</a></li>
+<li><a href="#sec-3-1-2"><i>nix-env</i> in a nutshell</a></li>
+<li><a href="#sec-3-1-3">Subcommands</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-sec-1" class="outline-2">
+<h2 id="sec-1">Introduction</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+This is my <i>Nix Guide.</i> Yes, it's a very generic name. Mostly because I'm not completely sure what it will end up as.
+</p>
+
+<p>
+For now, it's just a place where I'll keep posting as I learn more about the Nix ecosystem. So you can expect the organization and content of this file to change.
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-2" class="outline-2">
+<h2 id="sec-2">Changelog</h2>
+<div class="outline-text-2" id="text-2">
+<p>
+<span class="timestamp-wrapper"><span class="timestamp">[2016-10-22 Sat 15:44]</span></span>: Added section on the <i>nix-env</i> command.
+</p>
+</div>
+</div>
+<div id="outline-container-sec-3" class="outline-2">
+<h2 id="sec-3">The Tools</h2>
+<div class="outline-text-2" id="text-3">
+<p>
+The nix ecosystem (Nix, NixOS, NixOps, Disnix) provides a nice toolbelt for accomplishing a range of useful tasks. We will take a look at a number of them, try to understand what they do, and take a look at some examples.
+</p>
+</div>
+<div id="outline-container-sec-3-1" class="outline-3">
+<h3 id="sec-3-1">nix-env</h3>
+<div class="outline-text-3" id="text-3-1">
+<p>
+nix-env is used to manipulate or query Nix user enviroments. A <i>user environment</i> is the set of software packages that are available to the user. Any command or program that you can execute is a part of the environment. 
+</p>
+
+<p>
+The commands are made available to the environment through the <i>search path</i>, which is a set of directories that the environment searches for executable programs.
+</p>
+
+<p>
+It's important to understand how environments work in Nix, so before we start looking at what we can do with nix-env, we'll take a look at Nix environments.
+</p>
+</div>
+<div id="outline-container-sec-3-1-1" class="outline-4">
+<h4 id="sec-3-1-1">Nix Environments</h4>
+<div class="outline-text-4" id="text-3-1-1">
+<p>
+Nix is unique in that your environment is <i>immutable</i>. If you install, remove, or upgrade programs through Nix, it actually creates a new environment based off of your current one, but with the changes that you specified. So in Nix, the environment is actually the set of software packages <i>at some point in time</i>.
+</p>
+
+<p>
+Most users install, uninstall, and upgrade packages fairly frequently. This leaves you with a history of environments. In Nix, this history of environments is called a <i>profile</i>. And each environment in the profile is called a <i>generation</i>. Each time you create a new environment, it becomes the latest generation in the user profile.
+</p>
+
+<p>
+How the profile is implemented is pretty simple and rather interesting. In the user's home directory, there is a folder "~/.nix-profile". This is the user's profile. But ~/.nix-profile is actually a symbolic link:
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-sh">ls -l ~/.nix-profile
+</pre>
+</div>
+
+<pre class="example">
+: lrwxrwxrwx 1 caleb users 44 Oct 21 22:32 /home/caleb/.nix-profile -&gt; /nix/var/nix/profiles/per-user/caleb/profile
+</pre>
+
+<p>
+As you can see it links to a part of the file system that is organized around user profiles. Each user account has a "profile" directory under the <i>nix/var/nix/profiles/per-user/&lt;username&gt;</i> directory. <i>profile</i> is also a symbolic link, which we'll take a look at in a moment, but first let's take a look what else is in my user account's folder:
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-sh">ls /nix/var/nix/profiles/per-user/caleb/
+</pre>
+</div>
+
+<pre class="example">
+| profile         |
+| profile-33-link |
+| profile-34-link |
+| profile-35-link |
+| profile-36-link |
+| profile-37-link |
+| profile-38-link |
+| profile-39-link |
+| profile-40-link |
+| profile-41-link |
+| profile-42-link |
+</pre>
+
+<p>
+It contains a set of profiles! Each time a new environment is created, a directory for that <i>generation</i> ends up here. Alright, now let's see where that "profile" symbolic link is pointed to:
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-sh">ls -la /nix/var/nix/profiles/per-user/caleb/profile
+</pre>
+</div>
+
+<pre class="example">
+: lrwxrwxrwx 1 caleb users 15 Oct 21 21:40 /nix/var/nix/profiles/per-user/caleb/profile -&gt; profile-42-link
+</pre>
+
+<p>
+It just points to the latest profile link in that same directory. Ok, just one more link to follow:
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-sh">ls -la /nix/var/nix/profiles/per-user/caleb/profile-42-link
+</pre>
+</div>
+
+<pre class="example">
+: lrwxrwxrwx 1 caleb users 60 Oct 21 21:13 /nix/var/nix/profiles/per-user/caleb/profile-42-link -&gt; /nix/store/ykvnaa6nvrq4jxdwx2whlwqwwx116njs-user-environment
+</pre>
+
+<p>
+So we find out where the current generation of the profile is actually stored, and it happens to be the Nix store. As it turns out, every user environment in the system is kept in the Nix store. Profiles and generations are just convienient ways of organizing all these environments with symbolic links. It's a very nice abstraction that allows users to easily jump back and forth between previous environments should the need arise.
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-3-1-2" class="outline-4">
+<h4 id="sec-3-1-2"><i>nix-env</i> in a nutshell</h4>
+<div class="outline-text-4" id="text-3-1-2">
+<p>
+Back to <i>nix-env</i>.  What <i>nix-env</i> does is give us the basic tools to manage environments. The basic things you can do are:
+</p>
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+<caption class="t-above"><span class="table-number">Table 1:</span> <i>Some basic tasks you can do with nix-env</i></caption>
+
+<colgroup>
+<col  class="left" />
+
+<col  class="left" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="left">Manipulate the environment</th>
+<th scope="col" class="left">Query the environment</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="left">Install new packages</td>
+<td class="left">Show installed packages</td>
+</tr>
+
+<tr>
+<td class="left">Uninstall packages</td>
+<td class="left">Show available packages</td>
+</tr>
+
+<tr>
+<td class="left">Upgrade packages</td>
+<td class="left">List available generations</td>
+</tr>
+
+<tr>
+<td class="left">Change the current profile</td>
+<td class="left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="left">Change the generation</td>
+<td class="left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="left">Delete generations</td>
+<td class="left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="left">Rollback to a previous generation</td>
+<td class="left">&#xa0;</td>
+</tr>
+</tbody>
+</table>
+
+<p>
+The subcommands that perform these operations have a couple of options which are optional, but are particularly handy to know about:
+</p>
+
+<ul class="org-ul">
+<li>The <i>&#x2013;profile</i> option lets the user specify a profile other than the default active profile. If the option isn't provided, it will make the changes to your default user environment.
+</li>
+<li>The  <i>&#x2013;file</i>  option which specifies the [TODO: nix expression] that the install command (and others) use to find out what packages are available. Usually the default nix expression is nixpkgs, the official repository of nix packages. But sometimes you might want to install a package that you created outside of nixpkgs or you might want to point to a copy of nixpkgs you have locally that you are developing against.
+</li>
+</ul>
+
+<p>
+Next we'll look at the subcommands that nix-env provides.
+</p>
+</div>
+</div>
+<div id="outline-container-sec-3-1-3" class="outline-4">
+<h4 id="sec-3-1-3">Subcommands</h4>
+<div class="outline-text-4" id="text-3-1-3">
+</div><ul class="org-ul"><li><a id="sec-3-1-3-1" name="sec-3-1-3-1"></a>Install<br  /><div class="outline-text-5" id="text-3-1-3-1">
+<p>
+Install creates a new user environment based on the current user environment. The new enviroment is created by using the current environment as a base, and then adding a set of [TODO: nix store] paths to create the new one. The store paths that are added are described through arguments given to the install command.
+</p>
+
+<p>
+Usually when you install some packages, you won't be specifying the store paths. Nix-env will take the arguments and map those into store output paths for you.
+</p>
+
+<p>
+You will probably just specify the names of the software you're trying to install, which you'll find with the <a href="#sec-3-1-3-6">query</a> subcommand. They are the names of [TODO: derivations] in the active nix expression (probably nixpkgs, unless you specify a different nix expression). The derivations are then [TODO: realized], and the resulting [TODO: output path] is placed into the environment for you.
+</p>
+</div>
+<ul class="org-ul"><li><a id="sec-3-1-3-1-1" name="sec-3-1-3-1-1"></a>Some notes<br  /><div class="outline-text-6" id="text-3-1-3-1-1">
+<ul class="org-ul">
+<li>When you install a package to a new user environent, currently installed derivations of the same name are removed from the new user environment unless &#x2013;preserve-installed is specified.
+</li>
+<li>If the name of the package to be installed matches several derivations, the one with the highest priority is installed. The priority is specified by the 'priority' attribute of a derviation. Version number seems like a good choice here. If there are multiple of the same priority, the version will be installed.
+</li>
+<li>If you're specific about the versions, you can install multiple derivations of the same name. This will probably cause a conflict in the user environment, causing an error building the [TODO: generation]. TODO: How can you avoid this conflict? Dev Environments?
+</li>
+<li>A more precise alternative to using derivation names, is to specify the attribute path in the top-level nix expression with &#x2013;attr or -A
+</li>
+<li>An easy way to copy user environment elements from one profile to another is to use the <b>&#x2013;from-profile</b> option. Given a <i>profile path</i>, it takes an argument of names denoting installed store paths in the given path, and installs them. [TODO: Try this.]
+</li>
+<li>If the arguments provided are store derivations or store paths, these are realized and installed. [TODO: how does it map from store path to derivation?]
+</li>
+</ul>
+</div>
+</li></ul>
+</li>
+
+<li><a id="sec-3-1-3-2" name="sec-3-1-3-2"></a>Upgrade<br  /><div class="outline-text-5" id="text-3-1-3-2">
+<p>
+This is similar to install in that it creates a new user environment based on the current environment. The new environment is created by replacing all the store paths that have a newer version in the set of paths described by the arguments. If a member of the arguments matches no installed derivations, or there is no newer version, it is left untouched.
+</p>
+
+<p>
+You can also "upgrade" to versions equal to the current version, or even downgrade. These options can be useful when you want to replace the currently installed derivation to one built with a newer dependency, or if you want to switch the currently intalled version to a specific version which could be a downgrade.
+</p>
+</div>
+<ul class="org-ul"><li><a id="sec-3-1-3-2-1" name="sec-3-1-3-2-1"></a>Versions<br  /><div class="outline-text-6" id="text-3-1-3-2-1">
+<p>
+Nix determins what the newer version is by looking at the names. Names are split into two parts: the package name, and the version. For example, firefox-49.0 has the package name of "firefox" and the version is "49.0". The version begins after the first dash not followed by a letter.
+</p>
+
+<p>
+Nix then splits the version numbers up, comparing each character of the versions to see which one is newest. The details of how this is done are pretty straight forward, but the nix-env manual page is quite detailed if you need more information.
+</p>
+</div>
+</li></ul>
+</li>
+<li><a id="sec-3-1-3-3" name="sec-3-1-3-3"></a>Uninstall<br  /><div class="outline-text-5" id="text-3-1-3-3">
+<p>
+Uninstall is also similar to install, in that it creates a new user environment based on the current environment. It then removes all the store paths designated by the argument from the newly created environment.
+</p>
+</div>
+</li>
+<li><a id="sec-3-1-3-4" name="sec-3-1-3-4"></a>Set<br  /><div class="outline-text-5" id="text-3-1-3-4">
+<p>
+Set creates a new environment that contains only the specified derivation, and nothing else. It bases the new environment off the current generation of a profile, so you can specify the profile or you can base it off of the current profile.
+</p>
+</div>
+</li>
+<li><a id="sec-3-1-3-5" name="sec-3-1-3-5"></a>Set Flag<br  /><div class="outline-text-5" id="text-3-1-3-5">
+<p>
+The set flag operation lets the [TODO: meta attributes] of installed packages be modified.
+</p>
+
+<p>
+There are several attributes that might be useful to modify: keep, active, and priority.
+</p>
+
+<p>
+If you set a package's keep flag to true, future operations will not be upgrade or replace that package.
+</p>
+
+<p>
+If you set a package's active flag to false will disable the package. It remains part of the profile and won't be garbage collected, but it also won't be active in the enviroment.
+</p>
+
+<p>
+Priority can be used to resolve filename clashes. If multiple packages have conflicting files, the file which is part of the package with the higher priority becomes active in the environment.
+</p>
+</div>
+</li>
+<li><a id="sec-3-1-3-6" name="sec-3-1-3-6"></a>Query<br  /><div class="outline-text-5" id="text-3-1-3-6">
+<p>
+Query is used to display information about the derivations installed in either the current enviroment, or the active nix expression (probably nixpkgs).
+</p>
+
+<p>
+To query the current environment, you can specify the &#x2013;installed option (this is the default behavior). To query the active nix expression, you must specify the &#x2013;available (or -a) option.
+</p>
+
+<p>
+Common things one might query for are the installed packages in the environment, the available packages in the active nix expression, or what installed packages can be upgraded to newer versions in the active nix expression.
+</p>
+</div>
+</li>
+<li><a id="sec-3-1-3-7" name="sec-3-1-3-7"></a>Switch Profile<br  /><div class="outline-text-5" id="text-3-1-3-7">
+<p>
+As the name suggests, this lets you switch what profile is active. Remember, a profile is just a sequence of user environments called generations, one of which is the current generation.
+</p>
+
+<p>
+This could be useful if you keep different profiles on hand for different tasks, or maybe to run different versions of software. You could use this to quickly switch back and forth between those environments.
+</p>
+</div>
+</li>
+<li><a id="sec-3-1-3-8" name="sec-3-1-3-8"></a>List Generations<br  /><div class="outline-text-5" id="text-3-1-3-8">
+<p>
+This is a pretty self explanitory operation. It simply lists all the generations available for the active profile. The list also displays the dates that they were created, and which one is the current generation. The available generations can be switched to using the <i>Switch Generation</i> operation.
+</p>
+</div>
+</li>
+<li><a id="sec-3-1-3-9" name="sec-3-1-3-9"></a>Delete Generations<br  /><div class="outline-text-5" id="text-3-1-3-9">
+<p>
+If you use nix-env a lot to managage your environment, you'll most likely quickly end up with a lot of generations in your profile. Deleting older ones might make sense if you're worried about disk space. Although deleting a generation won't remove packages from the nix store, it might make the packages available to be [TODO: garbage collected].
+</p>
+
+<p>
+The &#x2013;delete-generations operation can take arguments in several different forms. You can specify a list of numbers corresponding to the generations you want to delete, or a value such as 30d to delete generations older then the specified number of days. You can also use the argument value <i>old</i> to delete all non-current generations. 
+</p>
+
+<p>
+Like most nix-env operations, you can also specify what profile you want to make active for the operation with <i>-p</i> and a path to the profile.
+</p>
+</div>
+</li>
+<li><a id="sec-3-1-3-10" name="sec-3-1-3-10"></a><a id="ID-6dbe6385-6171-4322-83f0-c56aaa283370" name="ID-6dbe6385-6171-4322-83f0-c56aaa283370"></a>Switch Generation<br  /><div class="outline-text-5" id="text-3-1-3-10">
+<p>
+The operation <i>&#x2013;switch-generation</i> takes a number as its argument, and makes that generation number the current generation of the active profile.
+</p>
+</div>
+</li>
+<li><a id="sec-3-1-3-11" name="sec-3-1-3-11"></a>Rollback<br  /><div class="outline-text-5" id="text-3-1-3-11">
+<p>
+Profiles and generations are a nice abstraction to a sequence of user environments. One thing it gives you is a very convenient way of doing a rollback to a previous generation if anything goes wrong. All you have to do is simply run the <i>&#x2013;rollback</i> operation and everything is instantly back to as it once was.
+</p>
+</div>
+</li></ul>
+</div>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<p class="author">Author: Caleb Gossler</p><p class="date">Last Modified: 2016-10-24 Mon 12:19</p>
+</div>
+</body>
+</html>
