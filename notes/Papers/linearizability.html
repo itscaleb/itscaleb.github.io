@@ -1,0 +1,558 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<title>Linearizability: A Correctness Condition for Concurrent Objects</title>
+<!-- 2016-11-07 Mon 17:02 -->
+<meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta  name="generator" content="Org-mode" />
+<meta  name="author" content="Caleb Gossler" />
+<link rel="stylesheet" type="text/css" href="/assets/style.css">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script type="text/javascript">
+/*
+@licstart  The following is the entire license notice for the
+JavaScript code in this tag.
+
+Copyright (C) 2012-2013 Free Software Foundation, Inc.
+
+The JavaScript code in this tag is free software: you can
+redistribute it and/or modify it under the terms of the GNU
+General Public License (GNU GPL) as published by the Free Software
+Foundation, either version 3 of the License, or (at your option)
+any later version.  The code is distributed WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU GPL for more details.
+
+As additional permission under GNU GPL version 3 section 7, you
+may distribute non-source (e.g., minimized or compacted) forms of
+that code without the copy of the GNU GPL normally required by
+section 4, provided you include this license notice and a URL
+through which recipients can access the Corresponding Source.
+
+
+@licend  The above is the entire license notice
+for the JavaScript code in this tag.
+*/
+<!--/*--><![CDATA[/*><!--*/
+ function CodeHighlightOn(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(null != target) {
+     elem.cacheClassElem = elem.className;
+     elem.cacheClassTarget = target.className;
+     target.className = "code-highlighted";
+     elem.className   = "code-highlighted";
+   }
+ }
+ function CodeHighlightOff(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(elem.cacheClassElem)
+     elem.className = elem.cacheClassElem;
+   if(elem.cacheClassTarget)
+     target.className = elem.cacheClassTarget;
+ }
+/*]]>*///-->
+</script>
+</head>
+<body>
+<div id="content">
+<h1 class="title">Linearizability: A Correctness Condition for Concurrent Objects</h1>
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#sec-1">Introduction</a></li>
+<li><a href="#sec-2">Concurrent Objects</a>
+<ul>
+<li><a href="#sec-2-1">Operations on Concurrent Objects</a></li>
+<li><a href="#sec-2-2">Sequential operations</a></li>
+<li><a href="#sec-2-3">Concurrent Operations</a></li>
+</ul>
+</li>
+<li><a href="#sec-3">Linearizability</a>
+<ul>
+<li><a href="#sec-3-1">Histories</a>
+<ul>
+<li><a href="#sec-3-1-1">Sequential History</a></li>
+<li><a href="#sec-3-1-2">Concurrent History</a></li>
+<li><a href="#sec-3-1-3">Legal Sequential Histories</a></li>
+</ul>
+</li>
+<li><a href="#sec-3-2">Partial Order of Events in a History</a></li>
+<li><a href="#sec-3-3">The Definition of <i>Linearizable</i></a></li>
+<li><a href="#sec-3-4">Linearizability and Nondeterminism</a></li>
+<li><a href="#sec-3-5">Example</a></li>
+<li><a href="#sec-3-6">Correctness in Operations</a></li>
+</ul>
+</li>
+<li><a href="#sec-4">Properties of a Linearizability</a>
+<ul>
+<li><a href="#sec-4-1">Locality</a></li>
+<li><a href="#sec-4-2">Nonblocking</a></li>
+</ul>
+</li>
+<li><a href="#sec-5">Summary</a></li>
+</ul>
+</div>
+</div>
+<div id="outline-container-sec-1" class="outline-2">
+<h2 id="sec-1">Introduction</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+<i>Concurrent objects</i> are data objects that are shared by a set of concurrent processes. These processes are able to invoke operations on them at any time. This of course brings up a lot of questions about how those objects should behave when operations are invoked at about the same time.
+</p>
+
+<p>
+What should happen if an operation is invoked on an object when it is still processing a previous operation? What if two operations are invoked at the same time?
+</p>
+
+<p>
+<i>Linearizability</i> is a constraint on a system that describe how these concurrent objects can behave in a concurrent environement.
+</p>
+
+<p>
+Intuitively, we can say that there are two requirements for concurrent objects in a linearizable system:
+</p>
+<ol class="org-ol">
+<li>Each operation should appear to take effect instantaneously. If multiple operations are called concurrently, each one will take effect atomically and there will be no cases where partially computed operations are visible to other processes. The order in which these concurrent operations take effect are not entirely clear.
+</li>
+<li>The order of non concurrent operations should be preserved. If operation <i>A</i> is invoked and completed before operation <i>B</i> is invoked, the fac that <i>A</i> happened before <i>B</i> should be reflected in the system.
+</li>
+</ol>
+
+<p>
+The nice thing about these requirements are that if implemented, they allow us to describe acceptable concurrent behavior directly in terms of acceptable sequential behavior. This is a much simpler way to reason about concurrent programs.
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-2" class="outline-2">
+<h2 id="sec-2">Concurrent Objects</h2>
+<div class="outline-text-2" id="text-2">
+<p>
+The requirements above are pretty vague. To get a better understanding on Linerazability, we need to take a closer look at concurrent objects.
+</p>
+</div>
+<div id="outline-container-sec-2-1" class="outline-3">
+<h3 id="sec-2-1">Operations on Concurrent Objects</h3>
+<div class="outline-text-3" id="text-2-1">
+<p>
+Shared objects in a linearizable system have a <i>type</i> and a set of possible values. The only means to manipulate the state of an object is through it's operations, and those operations are defined by the type of the object. For example, a <i>FIFO queue</i> object has the enqueue and dequeue operations.
+</p>
+
+<p>
+When a client needs to perform an operation on an object, the operation is <i>invoked</i> and then there is an associated <i>response</i> when the operation is completed. To continue with the queue example, when we want to put an item into a queue, we <i>invoke</i> the enqueue operation with the item to be enqueued. When the object sends back the associated response saying that it was a success, we know that the item has been enqueud and the operation was a success. When we want to dequeue an item from a queue, we <i>invoke</i> the dequeue operation, and await the <i>response</i> which contains the item that was dequeued.
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-2-2" class="outline-3">
+<h3 id="sec-2-2">Sequential operations</h3>
+<div class="outline-text-3" id="text-2-2">
+<p>
+When operations are performed <i>sequentially</i> on an object, there is an explicit order in which the operations were performed and the state of the object at the end of that sequence is fairly easy to reason about.
+</p>
+
+<p>
+Let's say there are two operations, <i>A</i> and <i>B</i>, which are invoked on an object. Those operations are <i>sequential</i> when the response to <i>A</i>'s invocation is received before the invocation of <i>B</i>. There is an explicit order in which the operations were performed; we can say for sure that <i>A</i> occurred before <i>B</i>.
+</p>
+
+
+<div class="figure">
+<p><img src="../../assets/sequential.png" alt="sequential.png" />
+</p>
+<p><span class="figure-number">Figure 1:</span> <i>An illustration of sequential operations performed by two processes, P1 and P2. Although there are two processes performing these operations, Operation A and Operation B are sequential because the response from operation A takes place before the invocation of process B.</i></p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-2-3" class="outline-3">
+<h3 id="sec-2-3">Concurrent Operations</h3>
+<div class="outline-text-3" id="text-2-3">
+<p>
+Things can get more complicated in a concurrent system however, when the operations are invoked by multiple processes and are <i>interleaved</i>. The operation <i>B</i> being invoked before the response to operation <i>A</i> is received is one simple example of how interleaving can occurr. As a user of the system there is no way to know in which order the operations will take effect on the object, and there is no clear understanding on how the object should behave under these circumstances.
+</p>
+
+
+<div class="figure">
+<p><img src="../../assets/concurrent.png" alt="concurrent.png" />
+</p>
+<p><span class="figure-number">Figure 2:</span> <i>Concurrent operations A and B which are interleaved. If you were an observer of this sequence of events, how would you expect this to behave?</i></p>
+</div>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-3" class="outline-2">
+<h2 id="sec-3">Linearizability</h2>
+<div class="outline-text-2" id="text-3">
+<p>
+This is where <i>linearizability</i> can be helpful. If the shared object is linearizable, it becomes much easier for a user of the system to understand and reason about how the object will behave in concurrent conditions. It also gives implementors of linearizable objects and systems a way to deem their implementation correct.
+</p>
+
+<p>
+So far we've talked about processes, objects, and operations, but before we define <i>linearizability</i> we need to introduce a couple more ideas in order to model a concurrent sequence of operations on a shared object.
+</p>
+</div>
+<div id="outline-container-sec-3-1" class="outline-3">
+<h3 id="sec-3-1">Histories</h3>
+<div class="outline-text-3" id="text-3-1">
+<p>
+A <i>history</i> is a sequence of operation invocation and response events of a concurrent system. The figures 1 and 2 above are a graphical representation of histories.
+</p>
+
+<p>
+A history gives us a way to model what events occurred and when they occured relative to eachother. In addition to modeling the events of an entire system, we can alse use a history to model the operations that occured on a single shared object, or operations invoked from a single process. These are <i>subhistories</i> of a history.
+</p>
+
+<p>
+Histories can represent a sequential series of events, and also a concurrent series of events.
+</p>
+</div>
+
+<div id="outline-container-sec-3-1-1" class="outline-4">
+<h4 id="sec-3-1-1">Sequential History</h4>
+<div class="outline-text-4" id="text-3-1-1">
+<p>
+An obvious example of a sequential history would be a single processes' subhistory (denoted as <i><b>H|P</b></i>). Processes by definition are sequential threads, so once they invoke an operation, they must wait until they receive the associated response.
+</p>
+
+<p>
+But as <i>Figure 1</i> shows, we can also have a sequential history when more than one processes are involved. A history is sequential if the following two conditions are met:
+</p>
+<ol class="org-ol">
+<li>The first event of a History <i><b>H</b></i> is an invocation
+</li>
+<li>Each invocation is followed by its matching response, and each response is followed by a matching invocation.
+</li>
+</ol>
+
+
+<div class="figure">
+<p><img src="../../assets/sequential-process.png" alt="sequential-process.png" />
+</p>
+<p><span class="figure-number">Figure 3:</span> <i>A single processes' subhistory, H|P<sub>1</sub>, which is sequential by definition</i></p>
+</div>
+</div>
+</div>
+<div id="outline-container-sec-3-1-2" class="outline-4">
+<h4 id="sec-3-1-2">Concurrent History</h4>
+<div class="outline-text-4" id="text-3-1-2">
+<p>
+Any history that is not sequential is concurrent. <i>Figure 2</i> is an example of a concurrent history: the invocation of operation <i>A</i> is followed by the invocation of operation <i>B</i>. This is against condition 2 of the above definition of <i>sequential history</i>, so it must be concurrent.
+</p>
+
+<p>
+Intuitively, this is pretty easy to see in <i>Figure 2</i> because operation B <i>lies within</i> operation A.
+</p>
+</div>
+</div>
+<div id="outline-container-sec-3-1-3" class="outline-4">
+<h4 id="sec-3-1-3">Legal Sequential Histories</h4>
+<div class="outline-text-4" id="text-3-1-3">
+<p>
+There's one more important note about histories, and that is defining what a <i>legal sequential history</i> is.
+</p>
+
+<p>
+A legal sequential history is a history <i><b>H</b></i> in which every object's <i>sequential</i> subhistory is valid. Put another way, all of the objects in the history behave as expected after a sequential sequence of operations have been invoked on it.
+</p>
+
+<p>
+As an example, let's take a look at one legal and one illegal sequential history for a FIFO queue, <i><b>q</b></i>. 
+</p>
+
+<p>
+The operations are expressed in the form <i>&lt;x op (args)&gt;</i> for an invocation of the operation <i>op</i> on object <i>x</i>, and <i>&lt;x term(response)&gt;</i> where <i>term</i> is a termination condition and <i>response</i> is a sequence of results.
+</p>
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+<caption class="t-above"><span class="table-number">Table 1:</span> <i>A legal sequential history H<sub>1</sub> and an illeagal sequential subhistory H<sub>2</sub> of operations performed on a FIFO queue.</i></caption>
+
+<colgroup>
+<col  class="left" />
+
+<col  class="left" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="left">Sequential History H<sub>1</sub> (legal)</th>
+<th scope="col" class="left">Sequential History H<sub>2</sub> (illegal)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="left"><i>q</i> Enqueue(x)</td>
+<td class="left"><i>q</i> Enqueue(x)</td>
+</tr>
+
+<tr>
+<td class="left"><i>q</i> Ok()</td>
+<td class="left"><i>q</i> Ok()</td>
+</tr>
+
+<tr>
+<td class="left"><i>q</i> Enqueue(y)</td>
+<td class="left"><i>q</i> Enqueue(y)</td>
+</tr>
+
+<tr>
+<td class="left"><i>q</i> Ok()</td>
+<td class="left"><i>q</i> Ok()</td>
+</tr>
+
+<tr>
+<td class="left"><i>q</i> Dequeue()</td>
+<td class="left"><i>q</i> Dequeue()</td>
+</tr>
+
+<tr>
+<td class="left"><i>q</i> Ok(x)</td>
+<td class="left"><i>q</i> Ok(y)</td>
+</tr>
+</tbody>
+</table>
+
+<p>
+First note that <i><b>H<sub>1</sub></b></i> and <i><b>H<sub>2</sub></b></i> are both sequential by the definition given above.
+</p>
+
+<p>
+It's clear that based on the sequential operations performed on the FIFO queue, the last dequeue operation should have returned <i>x</i> because it was the first item that was enqueued. Since <i>H<sub>2</sub></i> returned <i>y</i>, it is clearly contrary to the semantics of a FIFO queue and is illegal.
+</p>
+
+<p>
+To summarize, a <i>legal sequential history</i> is just a sequential history of operations where the objects in the history behave as expected.
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-3-2" class="outline-3">
+<h3 id="sec-3-2">Partial Order of Events in a History</h3>
+<div class="outline-text-3" id="text-3-2">
+<p>
+Just one last observation to make before we take a look at the definition of <i>linearizability</i>.
+</p>
+
+<p>
+If we once again take a look at figure 2, we can see that operations <i>A</i> and <i>B</i> are concurrent. There's no way to know which one of the operations will take effect before the other. But there is an order between operations <i>A</i> and <i>C</i>, and also <i>B</i> and <i>C</i>. <i>A</i> clearly takes effect before <i>C</i>, and <i>B</i> also clearly takes effect before <i>C</i>.
+</p>
+
+<p>
+We call that order a <i>partial order on operations</i>.
+</p>
+
+<p>
+Because the response of operation <i>A</i> takes place before the invocation of operation <i>C</i>, there is a partial order in history <b><i>H</i></b> (denoted as &lt;<sub>H</sub>) on operations <i>A</i> and <i>C</i>. This relationship can be donated as: <i>A &lt;<sub>H</sub> C</i>.
+</p>
+
+<p>
+Also because the response of operation <i>B</i> takes place before the invocation of operation <i>C</i>, there is a partial order in history <b><i>H</i></b> on operations <i>B</i> and <i>C</i>. Again, this relationship is donated as <i>B &lt;<sub>H</sub> C</i>.
+</p>
+
+<p>
+The term <i>partial order</i> does a good job in capturing the idea that although we can't order the entire history (because <i>A</i> and <i>B</i> are concurrent and we don't know the order in which those will take effect), we do at least know the order of some of the events in the history.
+</p>
+
+<p>
+Another way to state this, is that the partial order &lt;<sub>H</sub> captures the "real-time" precidence ordering of operations in <b><i>H</i></b>.
+</p>
+
+<p>
+<i>(As a side note, if we do know the order of every event in a history, which we do in a sequential history for example, that is called the total order)</i>
+</p>
+</div>
+</div>
+<div id="outline-container-sec-3-3" class="outline-3">
+<h3 id="sec-3-3">The Definition of <i>Linearizable</i></h3>
+<div class="outline-text-3" id="text-3-3">
+<p>
+Now we have covered everything we need to define linearizable. We define it in terms of a history:
+</p>
+
+<blockquote>
+<p>
+A history <i><b>H</b></i> is <i>linearizable</i> if it can be extended to some history <i><b>H&prime;</b></i> such that:
+</p>
+
+<p>
+L1. <b><i>H&prime;</i></b> is equivalent to some <i>legal sequential history</i> <b><i>S</i></b>
+</p>
+
+<p>
+L2. &lt;<sub>H</sub> &sube; &lt;<sub>S</sub>
+</p>
+
+<p>
+<b><i>S</i></b> is called a <i>linearization</i>.
+</p>
+</blockquote>
+
+<p>
+L1 says that even though processes invoked operations concurrently, they act as though they were interleaved as complete operations. Each operation "takes effect" immediately at some point, which is expressed through <i>H&prime;</i>.
+</p>
+
+<p>
+L1 also says that <b><i>H&prime;</i></b> is a legal sequential history, so all the objects in the history must behave as expected as if the operations were done sequentially.
+</p>
+
+<p>
+L2 says that this apparent sequential interleaving respects any partial orderings of events in a history <b><i>H</i></b>.
+</p>
+
+
+<div class="figure">
+<p><img src="../../assets/linearization.png" alt="linearization.png" />
+</p>
+<p><span class="figure-number">Figure 4:</span> <i>One possibile linearization, <b>S</b>, of Figure 2. Notice that A &lt;<sub>S</sub> C and B &lt;<sub>S</sub> C are both preserved.</i></p>
+</div>
+</div>
+</div>
+<div id="outline-container-sec-3-4" class="outline-3">
+<h3 id="sec-3-4">Linearizability and Nondeterminism</h3>
+<div class="outline-text-3" id="text-3-4">
+<p>
+It's important to point out that nondeterminism is inherent in linearizability. A concurrent history can be extended to many different different linearizations.
+</p>
+
+<p>
+This will become clear if we take a look at an example.
+</p>
+</div>
+</div>
+<div id="outline-container-sec-3-5" class="outline-3">
+<h3 id="sec-3-5">Example</h3>
+<div class="outline-text-3" id="text-3-5">
+<p>
+Take one more look at <i>Figure 2</i>. If you were observing a system that was <i>not linearizable</i> and tried to think about the possible end state of that history, it would be difficult to do.
+</p>
+
+<p>
+But if we look at that history in the context of it in a system that is <i>linearizable</i>, we can actually start to reason about it.
+</p>
+
+<p>
+Let's say that operation A and B are both enqueue operations on a FIFO queue, and operation C is a dequeue. Then there are two linearizations that are possible:
+</p>
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="left" />
+
+<col  class="left" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="left">Linearization 1</th>
+<th scope="col" class="left">Linearization 2</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="left"><i>q</i> Enqueue(<i>x</i>) P<sub>1</sub></td>
+<td class="left"><i>q</i> Enqueue(<i>y</i>) p<sub>2</sub></td>
+</tr>
+
+<tr>
+<td class="left"><i>q</i> Ok() P<sub>1</sub></td>
+<td class="left"><i>q</i> Ok() P<sub>2</sub></td>
+</tr>
+
+<tr>
+<td class="left"><i>q</i> Enqueue(<i>y</i>) P<sub>2</sub></td>
+<td class="left"><i>q</i> Enqueue(<i>x</i>) P<sub>1</sub></td>
+</tr>
+
+<tr>
+<td class="left"><i>q</i> Ok() P<sub>2</sub></td>
+<td class="left"><i>q</i> Ok() P<sub>1</sub></td>
+</tr>
+
+<tr>
+<td class="left"><i>q</i> Dequeue() P<sub>2</sub></td>
+<td class="left"><i>q</i> Dequeue() P<sub>2</sub></td>
+</tr>
+
+<tr>
+<td class="left"><i>q</i> Ok(<i>x</i>) P<sub>2</sub></td>
+<td class="left"><i>q</i> Ok(<i>y</i>) P<sub>2</sub></td>
+</tr>
+</tbody>
+</table>
+
+<p>
+So by having a linearizable system, and if we observe the history is <i>Figure 2</i>, we know there are two possibile outcomes, and that they're both correct based on the semantics of a FIFO queue.
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-3-6" class="outline-3">
+<h3 id="sec-3-6">Correctness in Operations</h3>
+<div class="outline-text-3" id="text-3-6">
+<p>
+One method of testing correctness in sequential objects is through pre and post conditions. TODO: Expound on this. Top of p 464 is where they are first mentioned. This section should be moved somewhere else.
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-4" class="outline-2">
+<h2 id="sec-4">Properties of a Linearizability</h2>
+<div class="outline-text-2" id="text-4">
+<p>
+There are two properties of linearizability: <i>local</i> and <i>nonblocking</i>.
+</p>
+</div>
+<div id="outline-container-sec-4-1" class="outline-3">
+<h3 id="sec-4-1">Locality</h3>
+<div class="outline-text-3" id="text-4-1">
+<p>
+A property is local if the system as a whole satisfies a property if each individual object satisfies the property. Linearizability is <i>local</i>.
+</p>
+
+<p>
+Locality allows linearizable systems to be constructed in a modular way. Linearizable objects can be implemented, verified, and executed independently. And if we can prove that each of the objects are linearizable, we know that the system as a whole is linearizable.
+</p>
+</div>
+</div>
+<div id="outline-container-sec-4-2" class="outline-3">
+<h3 id="sec-4-2">Nonblocking</h3>
+<div class="outline-text-3" id="text-4-2">
+<p>
+Another nice property of linearizability is that a pending invocation of an operation is never required to wait for another pending invocation to complete. Objects in a linearizable system are <i>nonblocking</i>.
+</p>
+
+<p>
+This is great for systems where concurrency and real-time response are important.
+</p>
+
+<p>
+Sometimes blocking is intended, for example dequeuing an empty queue might block until an item is enqueued. An object being <i>nonblocking</i> does not rule out blocking in these kinds of situations.
+</p>
+</div>
+</div>
+</div>
+<div id="outline-container-sec-5" class="outline-2">
+<h2 id="sec-5">Summary</h2>
+<div class="outline-text-2" id="text-5">
+<p>
+Linearizability is a constraint that can be put on a concurrent system, that allows it to "act" as if it were sequential. Any concurrent operations on an object are atomic and can be viewed as if they happened in sequence. And the order of non-concurrent operations are preserved. 
+</p>
+
+<p>
+As soon as an operation appears to have happened, that change of state is reflected in the system. This allows observers of the system to reason about the system as if it were sequential.
+</p>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<p class="author">Author: Caleb Gossler</p><p class="date">Last Modified: 2016-11-07 Mon 17:01</p>
+</div>
+</body>
+</html>
