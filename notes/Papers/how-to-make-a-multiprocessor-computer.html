@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<title>How to Make a Multiprocessor Computer That Correctly Executes Multiprocess Programs</title>
+<!-- 2016-11-18 Fri 17:03 -->
+<meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta  name="generator" content="Org-mode" />
+<meta  name="author" content="Caleb Gossler" />
+<link rel="stylesheet" type="text/css" href="/assets/style.css">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script type="text/javascript">
+/*
+@licstart  The following is the entire license notice for the
+JavaScript code in this tag.
+
+Copyright (C) 2012-2013 Free Software Foundation, Inc.
+
+The JavaScript code in this tag is free software: you can
+redistribute it and/or modify it under the terms of the GNU
+General Public License (GNU GPL) as published by the Free Software
+Foundation, either version 3 of the License, or (at your option)
+any later version.  The code is distributed WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU GPL for more details.
+
+As additional permission under GNU GPL version 3 section 7, you
+may distribute non-source (e.g., minimized or compacted) forms of
+that code without the copy of the GNU GPL normally required by
+section 4, provided you include this license notice and a URL
+through which recipients can access the Corresponding Source.
+
+
+@licend  The above is the entire license notice
+for the JavaScript code in this tag.
+*/
+<!--/*--><![CDATA[/*><!--*/
+ function CodeHighlightOn(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(null != target) {
+     elem.cacheClassElem = elem.className;
+     elem.cacheClassTarget = target.className;
+     target.className = "code-highlighted";
+     elem.className   = "code-highlighted";
+   }
+ }
+ function CodeHighlightOff(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(elem.cacheClassElem)
+     elem.className = elem.cacheClassElem;
+   if(elem.cacheClassTarget)
+     target.className = elem.cacheClassTarget;
+ }
+/*]]>*///-->
+</script>
+</head>
+<body>
+<div id="content">
+<h1 class="title">How to Make a Multiprocessor Computer That Correctly Executes Multiprocess Programs</h1>
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#sec-1">Introduction</a></li>
+<li><a href="#sec-2">Correctness for a Single Sequential Processor</a></li>
+<li><a href="#sec-3">Sequential Consistency in Multiprocessor Computers</a></li>
+<li><a href="#sec-4">The Problem</a></li>
+<li><a href="#sec-5">Requirements for Sequential Consistency</a></li>
+<li><a href="#sec-6">Conclusion</a></li>
+</ul>
+</div>
+</div>
+<div id="outline-container-sec-1" class="outline-2">
+<h2 id="sec-1">Introduction</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+<i>How to Make a Multiprocessor Computer That Correctly Executes Multiprocess Programs</i> was a short article published in 1979 by Leslie Lamport, and according to him,
+</p>
+<blockquote>
+<p>
+"What made this paper worth reading was its simple, precise definition of sequential consistency as the required correctness condition [for multiprocess algorithms]."
+</p>
+</blockquote>
+<p>
+And although defining sequential consistency is what this article is most known for, it was not the only purpose of the article.
+</p>
+
+<p>
+According to Lamport, the customary approach to designing and proving the correctness of multiprocess algorithms assumes that the multiprocessor computer is sequentially consistent, but a computer built of sequential processors does not guarantee that that is the case. Lamport then introduces two requirements for multiprocess computers that ensure the computer is in fact, <i>sequentially consistent</i>.
+</p>
+
+<p>
+Let's look at the definitions of a sequential processor, sequential consistency, and then look at an example that shows that a computer with several sequential processors is not necessarily sequentially consistent. After that we'll take a look at the requirements a multiprocessor computer must implement in order to be sequentially consistent.
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-2" class="outline-2">
+<h2 id="sec-2">Correctness for a Single Sequential Processor</h2>
+<div class="outline-text-2" id="text-2">
+<p>
+A single processor may execute operations in a different order than is specified by the program that it is executing. Imagine that a program has a write instruction to memory followed by a read instruction from a different section of memory. If the write instruction is waiting for a value to write, the processor could go ahead and execute the read instruction while it is waiting. The program will still be correct as long as the result of the execution is the same as if the operations were executed in the order specified by the program.
+</p>
+
+<p>
+A processor that satisfies that condition is <i>sequential</i>.
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-3" class="outline-2">
+<h2 id="sec-3">Sequential Consistency in Multiprocessor Computers</h2>
+<div class="outline-text-2" id="text-3">
+<p>
+A multiprocessor computer satisfying the following condition is <i>sequentially consistent</i>:
+</p>
+<blockquote>
+<p>
+The result of any execution is the same as if the operations of all the processors were executed in some sequential order, and the operations of each individual processor appear in this sequence in the order specified by its program.
+</p>
+</blockquote>
+<p>
+In other words, the program specifies an order in which operations are to be performed. Each processor executes some of these operations, and within each processor, these operations were performed in the order that is specified in the program. But each processor is running those operations concurrently, and <i>sequential consistency</i> does not require the operations across all processors to have occurred in the order specified by the program.
+</p>
+
+<p>
+<i>Sequential consistency</i> does imply that the operations within a processor are executed atomically, so one processor will not see the result of an operation performed by another until it is completed.
+</p>
+</div>
+</div>
+<div id="outline-container-sec-4" class="outline-2">
+<h2 id="sec-4">The Problem</h2>
+<div class="outline-text-2" id="text-4">
+<p>
+A multiprocessor computer built from sequential processors might lead one to think that it would naturally be sequentially consistent, but an example shows that this is not the case.
+</p>
+
+<p>
+The following example is a mutual exclusion protocol with two processes. The purpose is that only one process will execute its critical section at any time.
+</p>
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="left" />
+
+<col  class="left" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="left">Process 1</th>
+<th scope="col" class="left">Process 2</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="left">a := 1</td>
+<td class="left">b := 1</td>
+</tr>
+
+<tr>
+<td class="left">if b = 0 then <i>critical section</i>;</td>
+<td class="left">if a = 0 then <i>critical section</i>;</td>
+</tr>
+
+<tr>
+<td class="left">a := 0</td>
+<td class="left">b := 0</td>
+</tr>
+</tbody>
+</table>
+<p>
+A sequential processor could very well execute the read operation on the second line before the write operation on the first line, which could potentially cause both critical sections to run at the same time. So two sequential processors in a multiprocessor system could cause incorrect behavior.
+</p>
+
+<p>
+If the system was also sequentially consistent, the operations on each processor would be performed in the order of the program, and it would not be possible for both critical sections to run at the same time.
+</p>
+</div>
+</div>
+<div id="outline-container-sec-5" class="outline-2">
+<h2 id="sec-5">Requirements for Sequential Consistency</h2>
+<div class="outline-text-2" id="text-5">
+<p>
+The problem above leads to the first requirement.
+</p>
+<blockquote>
+<p>
+Each processor issues memory requests in the order specified by its program.
+</p>
+</blockquote>
+
+<p>
+And the second requirement
+</p>
+<blockquote>
+<p>
+Memory requests from all processors issued to an individual memory module are serviced from a single FIFO queue. Issuing a memory request consists of entering the request on this queue.
+</p>
+</blockquote>
+<p>
+arises from a problem where each memory module can have several ports, each port servicing memory requests for a particular processor. If multiple processors are waiting for requests on a memory module, and the memory module does not process them as a FIFO queue (round robin, for example), then race conditions can also cause the example above to execute both critical sections at the same time.
+</p>
+</div>
+</div>
+<div id="outline-container-sec-6" class="outline-2">
+<h2 id="sec-6">Conclusion</h2>
+<div class="outline-text-2" id="text-6">
+<p>
+These two requirements, along with a multiprocess computer built of sequential processors, ensures that it is sequentially consistent. Unfortunately, these requirements also make it impossible to for some optimizations that would be possible on single processor computers.
+</p>
+
+<p>
+The advantage of sequential consistency is that one could then use conventional methods for designing and proving correctness of multiprocess algorithms.
+</p>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<p class="author">Author: Caleb Gossler</p><p class="date">Last Modified: 2016-11-18 Fri 17:02</p>
+</div>
+</body>
+</html>
